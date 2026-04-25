@@ -18,6 +18,9 @@ qt_add_qml_module(appMatrizCriticidade
         Main.qml
         SOURCES appcontroller.h appcontroller.cpp
         QML_FILES qml/main.qml
+        QML_FILES CriticalityForm.qml
+        QML_FILES InstitutionSelect.qml
+        QML_FILES CriticalityMatrixComponents.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
