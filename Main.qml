@@ -11,7 +11,56 @@ ApplicationWindow {
 
     property string equipamentoSelecionado: "Equipamento 1"
 
-    ColumnLayout {
+    StackView{
+        id:screenStack
+        anchors.fill: parent
+        initialItem: institutionSelect
+    }
+    RowLayout{
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottomMargin: 20
+        spacing:10
+        Button{
+            id:goToCriticalityForm
+            text: "form"
+            onClicked: screenStack.push(criticalityForm)
+        }
+        Button{
+            id:goToMatriz
+            text:"matriz"
+            onClicked: screenStack.push(criticalityMatrixComponents)
+        }
+    }
+
+    Component{
+        id:institutionSelect
+        Page{
+            InstitutionSelect{
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+        }
+    }
+    Component{
+        id:criticalityForm
+        Page{
+            CriticalityForm{
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+        }
+    }
+    Component{
+        id:criticalityMatrixComponents
+        Page{
+            CriticalityMatrixComponents{
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+        }
+    }
+    /*ColumnLayout {
         anchors.fill: parent
         spacing: 10
         //padding: 10
@@ -46,41 +95,6 @@ ApplicationWindow {
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-
-                /*Label {
-                    text: "Matriz de Criticidade do " + equipamentoSelecionado
-                }
-
-                GridLayout {
-                    columns: 5
-                    rows: 5
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-
-                    Repeater {
-                        model: 20
-
-                        Rectangle {
-                            border.color: "black"
-                            Layout.preferredHeight: 40
-                            Layout.preferredWidth: 40
-                            color: {
-                                var row = Math.floor(index / 5)
-                                var col = index % 5
-                                var v = row + col
-                                if (v <= 1) return "green"
-                                if (v == 2) return "yellow"
-                                if (v == 3) return "orange"
-                                return "red"
-                            }
-
-                            /*Label {
-                                anchors.centerIn: parent
-                                text: index+1
-                            }
-                        }
-                    }
-                }*/
                 CriticalityMatrixComponents{}
             }
         }
@@ -92,5 +106,5 @@ ApplicationWindow {
             color: "black"
         }
 
-    }
+    }*/
 }

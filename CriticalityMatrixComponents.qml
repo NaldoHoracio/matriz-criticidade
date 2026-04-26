@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 ColumnLayout {
+    anchors.centerIn: parent
     Label {
         text: "Matriz de Criticidade do " + equipamentoSelecionado
     }

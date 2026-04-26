@@ -3,18 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 ColumnLayout {
-    Button{
-        id:apagarInstituicao
-        text:qsTr("Apagar instituição selecionada")
-    }
-    Button{
-        id:apagarSetor
-        text:qsTr("Apagar setor selecionado")
-    }
-    Button{
-        id:apagarEquipamento
-        text:qsTr("Apagar equipamento selecionado")
-    }
+    anchors.centerIn: parent
     Text{
         text:"Função equipamento"
     }
