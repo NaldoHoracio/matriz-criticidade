@@ -1,0 +1,110 @@
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import MatrizCriticidade
+
+ApplicationWindow {
+    visible: true
+    width: 1280
+    height: 720
+    title: "Matriz de Criticidade"
+
+    property string equipamentoSelecionado: "Equipamento 1"
+
+    StackView{
+        id:screenStack
+        anchors.fill: parent
+        initialItem: institutionSelect
+    }
+    RowLayout{
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottomMargin: 20
+        spacing:10
+        Button{
+            id:goToCriticalityForm
+            text: "form"
+            onClicked: screenStack.push(criticalityForm)
+        }
+        Button{
+            id:goToMatriz
+            text:"matriz"
+            onClicked: screenStack.push(criticalityMatrixComponents)
+        }
+    }
+
+    Component{
+        id:institutionSelect
+        Page{
+            InstitutionSelect{
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+        }
+    }
+    Component{
+        id:criticalityForm
+        Page{
+            CriticalityForm{
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+        }
+    }
+    Component{
+        id:criticalityMatrixComponents
+        Page{
+            CriticalityMatrixComponents{
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+        }
+    }
+    /*ColumnLayout {
+        anchors.fill: parent
+        spacing: 10
+        //padding: 10
+        Label {
+            text: AppController.instituicao
+            font.pixelSize: 28
+            font.bold: true
+            horizontalAlignment: Text.AlignHCenter
+            Layout.fillWidth: true
+        }
+
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+
+            // ESQUERDA
+            ColumnLayout {
+                RowLayout{
+                    InstitutionSelect{
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                    }
+                    CriticalityForm{
+                        Layout.fillHeight: true
+                    }
+                }
+
+
+            }
+            // DIREITA (MATRIZ)
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                CriticalityMatrixComponents{}
+            }
+        }
+
+        Label {
+            text: AppController.instituicao + " - 2026"
+            horizontalAlignment: Text.AlignHCenter
+            Layout.fillWidth: true
+            color: "black"
+        }
+
+    }*/
+}
