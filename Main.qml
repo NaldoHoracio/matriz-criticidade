@@ -10,7 +10,7 @@ ApplicationWindow {
     title: "Matriz de Criticidade"
 
     property string equipamentoSelecionado: "Equipamento 1"
-    enum FuncaoValues{
+    /*enum FuncaoValues{
         Sistema_Suporte_a_Vida=5,
         Terapia=4,
         Diagnostico=3,
@@ -29,11 +29,14 @@ ApplicationWindow {
         CriticidadeB=10,
         CriticidadeC=1
     }
+    function CalculateCriticity(){
+        //criticality=(FuncaoValues+RiscoFisicoValues)*(GrauImportanciaAbcValues*FuncaoValues)
+    }*/
 
     StackView{
         id:screenStack
         anchors.fill: parent
-        initialItem: institutionSelect
+        initialItem: criticalityForm
     }
     RowLayout{
         anchors.bottom: parent.bottom
