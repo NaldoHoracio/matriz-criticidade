@@ -9,6 +9,7 @@ ColumnLayout {
         //Layout.alignment:  Qt.AlignHCenter
     }
     ComboBox {
+        id:funcaoCombobox
         //model: ["Sistema de suporte à vida","Terapia","Diagnóstico","Análise","Apoio"]
         textRole:"Name"
         model:ListModel{
@@ -33,6 +34,10 @@ ColumnLayout {
                 Value:1
             }
         }
+        onActivated: {
+                console.log("Selected Text:", currentText)
+                console.log("Selected Index:", currentValue.Value)
+        }
         Layout.preferredWidth: 350
         Layout.alignment:  Qt.AlignHCenter
     }
@@ -41,6 +46,7 @@ ColumnLayout {
         //Layout.alignment:  Qt.AlignHCenter
     }
     ComboBox {
+        id:riscoCombobox
         //model: ["Morte","Lesão Grave","Lesão leve/moderada","Terapia ou diagnośtico falho","Sem Risco"]
         textRole:"Name"
         model:ListModel{
@@ -73,6 +79,7 @@ ColumnLayout {
         //Layout.alignment:  Qt.AlignHCenter
     }
     ComboBox {
+        id:riscoAbcCombobox
         //model: ["Risco Alto","Risco Médio ou baixo","Risco descartado"]
         textRole:"Name"
         model:ListModel{
@@ -97,6 +104,7 @@ ColumnLayout {
         //Layout.alignment:  Qt.AlignHCenter
     }
     ComboBox {
+        id:perdaCombobox
         //model: ["Risco Alto para perdas ou retrabalhos","Risco Médio para perdas ou retrabalhos","Risco baixo ou descartado"]
         textRole:"Name"
         model:ListModel{
@@ -121,6 +129,7 @@ ColumnLayout {
         //Layout.alignment:  Qt.AlignHCenter
     }
     ComboBox {
+        id:tempoFuncionamentoCombobox
         //model: ["24 horas/dia","8 a 24 horas/dia","menos que 8 horas/dia"]
         textRole:"Name"
         model:ListModel{
@@ -145,6 +154,7 @@ ColumnLayout {
         //Layout.alignment:  Qt.AlignHCenter
     }
     ComboBox {
+        id:interrupcaoCombobox
         //model: ["Interrompe todo processo de produção","Não intenrrompe processo, mas gera perdas","Não há impacto significativo"]
         textRole:"Name"
         model:ListModel{
@@ -169,6 +179,7 @@ ColumnLayout {
         //Layout.alignment:  Qt.AlignHCenter
     }
     ComboBox {
+        id:mttfCombobox
         //model: ["Maior que 1 falha/2 meses","1 falha/2 e 6 meses","Menor que 1 falha/6 meses"]
         textRole:"Name"
         model:ListModel{
@@ -193,6 +204,7 @@ ColumnLayout {
         //Layout.alignment:  Qt.AlignHCenter
     }
     ComboBox {
+        id:mtbrCombobox
         //model: ["Maior que 2h","entre 0,5h e 2h","menor que 0,5h"]
         textRole:"Name"
         model:ListModel{
