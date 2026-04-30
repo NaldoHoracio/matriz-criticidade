@@ -7,7 +7,6 @@ ColumnLayout {
     Layout.fillHeight: true
     anchors.centerIn: parent
     RowLayout{
-        id:rowButtons
         ColumnLayout{
             Button{
                 id:cadastrarInstituicao
@@ -39,7 +38,6 @@ ColumnLayout {
                 text:qsTr("Atualizar equipamento selecionado")
             }
             ColumnLayout{
-                anchors.centerIn: rowButtons.verticalCenter
                 ComboBox {
                     Layout.preferredWidth: 200
                     model: ["Instituição 1", "Instituição 2"]

@@ -10,6 +10,25 @@ ApplicationWindow {
     title: "Matriz de Criticidade"
 
     property string equipamentoSelecionado: "Equipamento 1"
+    enum FuncaoValues{
+        Sistema_Suporte_a_Vida=5,
+        Terapia=4,
+        Diagnostico=3,
+        Analise=2,
+        Suporte=1
+    }
+    enum RiscoFisicoValues{
+        Morte=5,
+        LesaoGrave=4,
+        LesaoLeveModerada=3,
+        TerapiaOuDiagnosticoFalho=2,
+        SemRisco=0
+    }
+    enum GrauImportanciaAbcValues{
+        CriticidadeA=15,
+        CriticidadeB=10,
+        CriticidadeC=1
+    }
 
     StackView{
         id:screenStack
