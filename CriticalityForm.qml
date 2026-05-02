@@ -13,7 +13,7 @@ ColumnLayout {
     property alias interrupcao:  interrupcaoCombobox.currentValue
     property alias mttf: mttfCombobox.currentValue
     property alias mttr: mtbrCombobox.currentValue
-    function ClassifyAbc(){
+    function classifyAbc(){
         var value;
         if(riscoAbc.Value ==="A"){
             value=15;
@@ -40,24 +40,24 @@ ColumnLayout {
                     if(interrupcao.Value === "B"){
                         if(mttf.Value ==="A" || mttf.Value ==="B"){
                             if(mttr.Value === "A" || mttr.Value === "B"){
-                                value=10;
+                                value=5;
                                 console.log(value);
                                 return value;
                             }
                             if(mttr.Value === "C"){
-                                value=5;
+                                value=1;
                                 console.log(value);
                                 return value;
                             }
                         }
                         if(mttf.Value ==="C"){
-                            value=5;
+                            value=1;
                             console.log(value);
                             return value;
                         }
                     }
                     if(interrupcao.Value === "C"){
-                        value=5;
+                        value=1;
                         console.log(value);
                         return value;
                     }
@@ -66,30 +66,46 @@ ColumnLayout {
                     if(interrupcao.Value === "A" || interrupcao.Value === "B"){
                         if(mttf.Value === "A" || mttf.Value === "B"){
                             if(mttr.Value === "A" || mttr.Value === "B"){
-                                value=10;
+                                value=5;
                                 console.log(value);
                                 return value;
                             }
                             if(mttr.Value === "C"){
-                                value=5;
+                                value=1;
                                 console.log(value);
                                 return value;
                             }
                         }
                         if(mttf.Value === "C"){
-                            value=5;
+                            value=1;
                             console.log(value);
                             return value;
                         }
                     }
                     if(interrupcao.Value === "C"){
-                        value=5;
+                        value=1;
                         console.log(value);
                         return value;
                     }
                 }
             }
         }
+    }
+    function printComboboxesValues(){
+        console.log(funcao.Value);
+        console.log(risco.Value);
+        console.log(riscoAbc.Value);
+        console.log(perdaAbc.Value);
+        console.log(tempo.Value);
+        console.log(interrupcao.Value);
+        console.log(mttf.Value);
+        console.log(mttr.Value);
+    }
+    function calculateCriticity(){
+        var AbcClassification=classifyAbc();
+        var criticity=(funcao.Value+risco.Value)*(AbcClassification+funcao.Value);
+        console.log(criticity);
+        return criticity;
     }
     Text{
         text:"Função equipamento"
@@ -294,6 +310,10 @@ ColumnLayout {
         }
         Layout.preferredWidth: 350
         Layout.alignment:  Qt.AlignHCenter
+    }
+    Button{
+        text: "print values"
+        onClicked: classifyAbc()
     }
     Item {
         Layout.fillWidth: true
