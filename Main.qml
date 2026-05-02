@@ -68,8 +68,10 @@ ApplicationWindow {
         id:criticalityForm
         Page{
             CriticalityForm{
+                id:form
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+
             }
         }
     }

@@ -3,7 +3,94 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 ColumnLayout {
+    id:criticalityForm
     anchors.centerIn: parent
+    property alias funcao: funcaoCombobox.currentValue
+    property alias risco: riscoCombobox.currentValue
+    property alias riscoAbc: riscoAbcCombobox.currentValue
+    property alias perdaAbc: perdaCombobox.currentValue
+    property alias tempo: tempoFuncionamentoCombobox.currentValue
+    property alias interrupcao:  interrupcaoCombobox.currentValue
+    property alias mttf: mttfCombobox.currentValue
+    property alias mttr: mtbrCombobox.currentValue
+    function ClassifyAbc(){
+        var value;
+        if(riscoAbc.Value ==="A"){
+            value=15;
+            console.log(value);
+            return value;
+        }
+        if(riscoAbc.Value === "B" || riscoAbc.Value === "C"){
+            if(perdaAbc.Value === "A"){
+                value=15;
+                console.log(value);
+                return value;
+            }
+            if(perdaAbc.Value === "B" || perdaAbc.Value === "C"){
+                if(tempo.Value === "A" || tempo.Value === "B"){
+                    if(interrupcao.Value === "A"){
+                        if(mttf.Value === "A"){
+                            if(mttr.Value === "A"){
+                                value=15;
+                                console.log(value);
+                                return value;
+                            }
+                        }
+                    }
+                    if(interrupcao.Value === "B"){
+                        if(mttf.Value ==="A" || mttf.Value ==="B"){
+                            if(mttr.Value === "A" || mttr.Value === "B"){
+                                value=10;
+                                console.log(value);
+                                return value;
+                            }
+                            if(mttr.Value === "C"){
+                                value=5;
+                                console.log(value);
+                                return value;
+                            }
+                        }
+                        if(mttf.Value ==="C"){
+                            value=5;
+                            console.log(value);
+                            return value;
+                        }
+                    }
+                    if(interrupcao.Value === "C"){
+                        value=5;
+                        console.log(value);
+                        return value;
+                    }
+                }
+                if(tempo.Value === "C"){
+                    if(interrupcao.Value === "A" || interrupcao.Value === "B"){
+                        if(mttf.Value === "A" || mttf.Value === "B"){
+                            if(mttr.Value === "A" || mttr.Value === "B"){
+                                value=10;
+                                console.log(value);
+                                return value;
+                            }
+                            if(mttr.Value === "C"){
+                                value=5;
+                                console.log(value);
+                                return value;
+                            }
+                        }
+                        if(mttf.Value === "C"){
+                            value=5;
+                            console.log(value);
+                            return value;
+                        }
+                    }
+                    if(interrupcao.Value === "C"){
+                        value=5;
+                        console.log(value);
+                        return value;
+                    }
+                }
+            }
+        }
+    }
     Text{
         text:"Função equipamento"
     }
@@ -32,10 +119,10 @@ ColumnLayout {
                 Value:1
             }
         }
-        onActivated: {
+        /*onActivated: {
                 console.log("Selected Text:", currentText)
                 console.log("Selected Index:", currentValue.Value)
-        }
+        }*/
         Layout.preferredWidth: 350
         Layout.alignment:  Qt.AlignHCenter
     }
