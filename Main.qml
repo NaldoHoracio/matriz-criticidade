@@ -10,6 +10,7 @@ ApplicationWindow {
     title: "Matriz de Criticidade"
 
     property string equipamentoSelecionado: "Equipamento 1"
+    property int criticityValue
     /*enum FuncaoValues{
         Sistema_Suporte_a_Vida=5,
         Terapia=4,
@@ -26,7 +27,7 @@ ApplicationWindow {
     }
     enum GrauImportanciaAbcValues{
         CriticidadeA=15,
-        CriticidadeB=10,
+        CriticidadeB=5,
         CriticidadeC=1
     }
     function CalculateCriticity(){
@@ -51,7 +52,12 @@ ApplicationWindow {
         Button{
             id:goToMatriz
             text:"matriz"
-            onClicked: screenStack.push(criticalityMatrixComponents)
+            onClicked: {
+                criticalityForm.form.printComboboxesValues();
+                //criticityValue=criticalityForm.form.calculateCriticity();
+                //console.log(criticityValue);
+                //screenStack.push(criticalityMatrixComponents,{"criticalityScore":criticityValue});
+            }
         }
     }
 
@@ -71,7 +77,13 @@ ApplicationWindow {
                 id:form
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-
+                Button{
+                    text:"Calcular Criticidade"
+                    onClicked:{
+                        criticityValue=form.calculateCriticity();
+                        screenStack.push(criticalityMatrixComponents);
+                    }
+                }
             }
         }
     }
@@ -81,6 +93,11 @@ ApplicationWindow {
             CriticalityMatrixComponents{
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+
+                Label {
+                    id:criticality
+                    text: criticityValue
+                }
             }
         }
     }

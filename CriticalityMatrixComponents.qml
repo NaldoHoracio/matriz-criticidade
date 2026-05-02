@@ -3,7 +3,9 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 ColumnLayout {
+    id:criticalityMatrixComponents
     anchors.centerIn: parent
+    //property alias criticalityScore:criticality.text
     Label {
         text: "Matriz de Criticidade do " + equipamentoSelecionado
     }
@@ -31,10 +33,6 @@ ColumnLayout {
                     return "red"
                 }
 
-                /*Label {
-                    anchors.centerIn: parent
-                    text: index+1
-                }*/
             }
         }
     }
