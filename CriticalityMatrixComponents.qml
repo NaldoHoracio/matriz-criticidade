@@ -17,20 +17,22 @@ ColumnLayout {
         Layout.fillHeight: true
 
         Repeater {
-            model: 20
+            model: 25
 
             Rectangle {
                 border.color: "black"
-                Layout.preferredHeight: 40
-                Layout.preferredWidth: 40
+                Layout.preferredHeight: 80
+                Layout.preferredWidth: 80
                 color: {
-                    var row = Math.floor(index / 5)
-                    var col = index % 5
-                    var v = row + col
-                    if (v <= 1) return "green"
-                    if (v == 2) return "yellow"
-                    if (v == 3) return "orange"
-                    return "red"
+                    if(index===2 || index===3 || index===4 || index===7 || index===8 || index===9 || index===13 || index===14){
+                        return "red";
+                    }
+                    if(index===15 || index===20 || index===21 || index===22){
+                        return "green";
+                    }
+                    else{
+                        return "yellow";
+                    }
                 }
 
             }

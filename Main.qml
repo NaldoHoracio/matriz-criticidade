@@ -10,7 +10,7 @@ ApplicationWindow {
     title: "Matriz de Criticidade"
 
     property string equipamentoSelecionado: "Equipamento 1"
-    property int criticityValue
+    property int criticityValue:0
     /*enum FuncaoValues{
         Sistema_Suporte_a_Vida=5,
         Terapia=4,
@@ -53,10 +53,7 @@ ApplicationWindow {
             id:goToMatriz
             text:"matriz"
             onClicked: {
-                criticalityForm.form.printComboboxesValues();
-                //criticityValue=criticalityForm.form.calculateCriticity();
-                //console.log(criticityValue);
-                //screenStack.push(criticalityMatrixComponents,{"criticalityScore":criticityValue});
+                screenStack.push(criticalityMatrixComponents);
             }
         }
     }
