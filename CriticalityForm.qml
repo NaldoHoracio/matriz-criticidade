@@ -308,10 +308,6 @@ ColumnLayout {
         Layout.preferredWidth: 350
         Layout.alignment:  Qt.AlignHCenter
     }
-    /*Button{
-        text: "print values"
-        onClicked: calculateCriticity()
-    }*/
     Item {
         Layout.fillWidth: true
     }

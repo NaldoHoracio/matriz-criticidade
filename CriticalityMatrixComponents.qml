@@ -5,7 +5,90 @@ import QtQuick.Layouts
 ColumnLayout {
     id:criticalityMatrixComponents
     anchors.centerIn: parent
-
+    function highlightMatrix(){
+        if(((impacto ===1 || impacto ===2)) && ((probabilidade ===2) || (probabilidade ===3))){
+            setBorderInTheRectangle(20);
+        }
+        if(((impacto ===1) || (impacto ===2)) && ((probabilidade ===4) || (probabilidade ===5))){
+            setBorderInTheRectangle(21);
+        }
+        if(((impacto ===1) || (impacto ===2)) && ((probabilidade ===6) || (probabilidade <=15))){
+            setBorderInTheRectangle(22);
+        }
+        if(((impacto ===1) || (impacto ===2)) && ((probabilidade >=16) || (probabilidade ===18))){
+            setBorderInTheRectangle(23);
+        }
+        if(((impacto ===1) || (impacto ===2)) && ((probabilidade ===19) || (probabilidade ===20))){
+            setBorderInTheRectangle(24);
+        }
+        if(((impacto ===3) || (impacto ===4)) && ((probabilidade ===2) || (probabilidade ===3))){
+            setBorderInTheRectangle(15);
+        }
+        if(((impacto ===3) || (impacto ===4)) && ((probabilidade ===4) || (probabilidade ===5))){
+            setBorderInTheRectangle(16);
+        }
+        if(((impacto ===3) || (impacto ===4)) && ((probabilidade ===6) || (probabilidade <=15))){
+            setBorderInTheRectangle(17);
+        }
+        if(((impacto === 3) || (impacto === 4)) && ((probabilidade >= 16) || (probabilidade === 18))){
+            setBorderInTheRectangle(18);
+        }
+        if(((impacto ===3) || (impacto ===4)) && ((probabilidade ===19) || (probabilidade ===20))){
+            setBorderInTheRectangle(19);
+        }
+        if(((impacto ===5) || (impacto ===6)) && ((probabilidade ===2) || (probabilidade ===3))){
+            setBorderInTheRectangle(10);
+        }
+        if(((impacto ===5) || (impacto ===6)) && ((probabilidade ===4) || (probabilidade ===5))){
+            setBorderInTheRectangle(11);
+        }
+        if(((impacto ===5) || (impacto ===6)) && ((probabilidade ===6) || (probabilidade <=15))){
+            setBorderInTheRectangle(12);
+        }
+        if(((impacto ===5) || (impacto ===6)) && ((probabilidade >=16) || (probabilidade ===18))){
+            setBorderInTheRectangle(13);
+        }
+        if(((impacto ===5) || (impacto ===6)) && ((probabilidade ===19) || (probabilidade ===20))){
+            setBorderInTheRectangle(14);
+        }
+        if(((impacto ===7) || (impacto ===8)) && ((probabilidade ===2) || (probabilidade ===3))){
+            setBorderInTheRectangle(5);
+        }
+        if(((impacto ===7) || (impacto ===8)) && ((probabilidade ===4) || (probabilidade ===5))){
+            setBorderInTheRectangle(6);
+        }
+        if(((impacto ===7) || (impacto ===8)) && ((probabilidade ===6) || (probabilidade <=15))){
+            setBorderInTheRectangle(7);
+        }
+        if(((impacto ===7) || (impacto ===8)) && ((probabilidade >=16) || (probabilidade ===18))){
+            setBorderInTheRectangle(8);
+        }
+        if(((impacto ===7) || (impacto ===8)) && ((probabilidade ===19) || (probabilidade ===20))){
+            setBorderInTheRectangle(9);
+        }
+        if(((impacto ===9) || (impacto ===10)) && ((probabilidade ===2) || (probabilidade ===3))){
+            setBorderInTheRectangle(0);
+        }
+        if(((impacto ===9) || (impacto ===10)) && ((probabilidade ===4) || (probabilidade ===5))){
+            setBorderInTheRectangle(1);
+        }
+        if(((impacto ===9) || (impacto ===10)) && ((probabilidade >=6) && (probabilidade <=15))){
+            setBorderInTheRectangle(2);
+        }
+        if(((impacto ===9) || (impacto ===10)) && ((probabilidade >=16) && (probabilidade <=18))){
+            setBorderInTheRectangle(3);
+        }
+        if(((impacto ===9) || (impacto ===10)) && ((probabilidade ===19) || (probabilidade ===20))){
+            setBorderInTheRectangle(4);
+        }
+    }
+    function setBorderInTheRectangle(index){
+        var item=criticalityMatrix.itemAt(index);
+        if(item){
+            item.border.color="darkgreen";
+            item.border.width=5;
+        }
+    }
     Label {
         text: "Matriz de Criticidade do " + equipamentoSelecionado
     }
@@ -17,89 +100,10 @@ ColumnLayout {
         Layout.fillHeight: true
 
         Repeater {
+            id:criticalityMatrix
             model: 25
             Rectangle {
-                border.color:{
-                    if(((impacto ===1 || impacto ===2)) && ((probabilidade ===2) || (probabilidade ===3)) && (index===20)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===1) || (impacto ===2)) && ((probabilidade ===4) || (probabilidade ===5)) && (index===21)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===1) || (impacto ===2)) && ((probabilidade ===6) || (probabilidade <=15)) && (index===22)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===1) || (impacto ===2)) && ((probabilidade >=16) || (probabilidade ===18)) && (index===23)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===1) || (impacto ===2)) && ((probabilidade ===19) || (probabilidade ===20)) && (index===24)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===3) || (impacto ===4)) && ((probabilidade ===2) || (probabilidade ===3)) && (index===15)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===3) || (impacto ===4)) && ((probabilidade ===4) || (probabilidade ===5)) && (index===16)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===3) || (impacto ===4)) && ((probabilidade ===6) || (probabilidade <=15)) && (index===17)){
-                        return "darkgreen";
-                    }
-                    if(((impacto === 3) || (impacto === 4)) && ((probabilidade >= 16) || (probabilidade === 18)) && (index===18)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===3) || (impacto ===4)) && ((probabilidade ===19) || (probabilidade ===20)) && (index===19)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===5) || (impacto ===6)) && ((probabilidade ===2) || (probabilidade ===3)) && (index===10)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===5) || (impacto ===6)) && ((probabilidade ===4) || (probabilidade ===5)) && (index===11)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===5) || (impacto ===6)) && ((probabilidade ===6) || (probabilidade <=15)) && (index===12)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===5) || (impacto ===6)) && ((probabilidade >=16) || (probabilidade ===18)) && (index===13)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===5) || (impacto ===6)) && ((probabilidade ===19) || (probabilidade ===20)) && (index===14)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===7) || (impacto ===8)) && ((probabilidade ===2) || (probabilidade ===3)) && (index===5)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===7) || (impacto ===8)) && ((probabilidade ===4) || (probabilidade ===5)) && (index===6)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===7) || (impacto ===8)) && ((probabilidade ===6) || (probabilidade <=15)) && (index===7)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===7) || (impacto ===8)) && ((probabilidade >=16) || (probabilidade ===18)) && (index===8)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===7) || (impacto ===8)) && ((probabilidade ===19) || (probabilidade ===20)) && (index===9)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===9) || (impacto ===10)) && ((probabilidade ===2) || (probabilidade ===3)) && (index===0)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===9) || (impacto ===10)) && ((probabilidade ===4) || (probabilidade ===5)) && (index===1)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===9) || (impacto ===10)) && ((probabilidade ===6) || (probabilidade <=15)) && (index===2)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===9) || (impacto ===10)) && ((probabilidade >=16) || (probabilidade ===18)) && (index===3)){
-                        return "darkgreen";
-                    }
-                    if(((impacto ===9) || (impacto ===10)) && ((probabilidade ===19) || (probabilidade ===20)) && (index===4)){
-                        return "darkgreen";
-                    }
-                    else{
-                        return "black";
-                    }
-                }
-                border.width: 5
+                id:container
                 Layout.preferredHeight: 80
                 Layout.preferredWidth: 80
                 color: {
@@ -112,6 +116,9 @@ ColumnLayout {
                     else{
                         return "yellow";
                     }
+                }
+                Component.onCompleted: {
+                    highlightMatrix();
                 }
             }
         }
