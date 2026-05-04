@@ -10,29 +10,12 @@ ApplicationWindow {
     title: "Matriz de Criticidade"
 
     property string equipamentoSelecionado: "Equipamento 1"
-    property int criticityValue:0
-    /*enum FuncaoValues{
-        Sistema_Suporte_a_Vida=5,
-        Terapia=4,
-        Diagnostico=3,
-        Analise=2,
-        Suporte=1
-    }
-    enum RiscoFisicoValues{
-        Morte=5,
-        LesaoGrave=4,
-        LesaoLeveModerada=3,
-        TerapiaOuDiagnosticoFalho=2,
-        SemRisco=0
-    }
-    enum GrauImportanciaAbcValues{
-        CriticidadeA=15,
-        CriticidadeB=5,
-        CriticidadeC=1
-    }
-    function CalculateCriticity(){
-        //criticality=(FuncaoValues+RiscoFisicoValues)*(GrauImportanciaAbcValues*FuncaoValues)
-    }*/
+    property int criticityValue:2
+    property int  funcao: 1
+    property int risco: 0
+    property int classificacaoAbc:1
+    property int impacto:0
+    property int probabilidade:0
 
     StackView{
         id:screenStack
@@ -78,6 +61,11 @@ ApplicationWindow {
                     text:"Calcular Criticidade"
                     onClicked:{
                         criticityValue=form.calculateCriticity();
+                        funcao=form.getFuncao().Value;
+                        risco=form.getRisco().Value;
+                        classificacaoAbc=form.getClassificacao();
+                        impacto=funcao+risco;
+                        probabilidade=classificacaoAbc+funcao;
                         screenStack.push(criticalityMatrixComponents);
                     }
                 }

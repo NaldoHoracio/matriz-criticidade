@@ -13,17 +13,24 @@ ColumnLayout {
     property alias interrupcao:  interrupcaoCombobox.currentValue
     property alias mttf: mttfCombobox.currentValue
     property alias mttr: mtbrCombobox.currentValue
+    function getFuncao(){
+        return funcao;
+    }
+    function getRisco(){
+        return risco;
+    }
+    function getClassificacao(){
+        return classifyAbc();
+    }
     function classifyAbc(){
         var value;
         if(riscoAbc.Value ==="A"){
             value=15;
-            console.log(value);
             return value;
         }
         if(riscoAbc.Value === "B" || riscoAbc.Value === "C"){
             if(perdaAbc.Value === "A"){
                 value=15;
-                console.log(value);
                 return value;
             }
             if(perdaAbc.Value === "B" || perdaAbc.Value === "C"){
@@ -32,7 +39,6 @@ ColumnLayout {
                         if(mttf.Value === "A"){
                             if(mttr.Value === "A"){
                                 value=15;
-                                console.log(value);
                                 return value;
                             }
                         }
@@ -41,24 +47,20 @@ ColumnLayout {
                         if(mttf.Value ==="A" || mttf.Value ==="B"){
                             if(mttr.Value === "A" || mttr.Value === "B"){
                                 value=5;
-                                console.log(value);
                                 return value;
                             }
                             if(mttr.Value === "C"){
                                 value=1;
-                                console.log(value);
                                 return value;
                             }
                         }
                         if(mttf.Value ==="C"){
                             value=1;
-                            console.log(value);
                             return value;
                         }
                     }
                     if(interrupcao.Value === "C"){
                         value=1;
-                        console.log(value);
                         return value;
                     }
                 }
@@ -67,24 +69,20 @@ ColumnLayout {
                         if(mttf.Value === "A" || mttf.Value === "B"){
                             if(mttr.Value === "A" || mttr.Value === "B"){
                                 value=5;
-                                console.log(value);
                                 return value;
                             }
                             if(mttr.Value === "C"){
                                 value=1;
-                                console.log(value);
                                 return value;
                             }
                         }
                         if(mttf.Value === "C"){
                             value=1;
-                            console.log(value);
                             return value;
                         }
                     }
                     if(interrupcao.Value === "C"){
                         value=1;
-                        console.log(value);
                         return value;
                     }
                 }
@@ -104,7 +102,6 @@ ColumnLayout {
     function calculateCriticity(){
         var AbcClassification=classifyAbc();
         var criticity=(funcao.Value+risco.Value)*(AbcClassification+funcao.Value);
-        console.log(criticity);
         return criticity;
     }
     Text{
