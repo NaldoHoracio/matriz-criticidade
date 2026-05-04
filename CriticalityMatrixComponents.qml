@@ -20,16 +20,16 @@ ColumnLayout {
             model: 25
             Rectangle {
                 border.color:{
-                    if((impacto ===1 || impacto ===2) && (probabilidade ===2 || probabilidade ===3) && (index===20)){
+                    if(((impacto ===1 || impacto ===2)) && ((probabilidade ===2) || (probabilidade ===3)) && (index===20)){
                         return "darkgreen";
                     }
                     if(((impacto ===1) || (impacto ===2)) && ((probabilidade ===4) || (probabilidade ===5)) && (index===21)){
                         return "darkgreen";
                     }
-                    if(((impacto ===1) || (impacto ===2)) && ((probabilidade ===6) || (probabilidade ===15)) && (index===22)){
+                    if(((impacto ===1) || (impacto ===2)) && ((probabilidade ===6) || (probabilidade <=15)) && (index===22)){
                         return "darkgreen";
                     }
-                    if(((impacto ===1) || (impacto ===2)) && ((probabilidade ===16) || (probabilidade ===18)) && (index===23)){
+                    if(((impacto ===1) || (impacto ===2)) && ((probabilidade >=16) || (probabilidade ===18)) && (index===23)){
                         return "darkgreen";
                     }
                     if(((impacto ===1) || (impacto ===2)) && ((probabilidade ===19) || (probabilidade ===20)) && (index===24)){
@@ -41,10 +41,10 @@ ColumnLayout {
                     if(((impacto ===3) || (impacto ===4)) && ((probabilidade ===4) || (probabilidade ===5)) && (index===16)){
                         return "darkgreen";
                     }
-                    if(((impacto ===3) || (impacto ===4)) && ((probabilidade ===6) || (probabilidade ===15)) && (index===17)){
+                    if(((impacto ===3) || (impacto ===4)) && ((probabilidade ===6) || (probabilidade <=15)) && (index===17)){
                         return "darkgreen";
                     }
-                    if(((impacto ===3) || (impacto ===4)) && ((probabilidade ===16) || (probabilidade ===18)) && (index===18)){
+                    if(((impacto === 3) || (impacto === 4)) && ((probabilidade >= 16) || (probabilidade === 18)) && (index===18)){
                         return "darkgreen";
                     }
                     if(((impacto ===3) || (impacto ===4)) && ((probabilidade ===19) || (probabilidade ===20)) && (index===19)){
@@ -56,10 +56,10 @@ ColumnLayout {
                     if(((impacto ===5) || (impacto ===6)) && ((probabilidade ===4) || (probabilidade ===5)) && (index===11)){
                         return "darkgreen";
                     }
-                    if(((impacto ===5) || (impacto ===6)) && ((probabilidade ===6) || (probabilidade ===15)) && (index===12)){
+                    if(((impacto ===5) || (impacto ===6)) && ((probabilidade ===6) || (probabilidade <=15)) && (index===12)){
                         return "darkgreen";
                     }
-                    if(((impacto ===5) || (impacto ===6)) && ((probabilidade ===16) || (probabilidade ===18)) && (index===13)){
+                    if(((impacto ===5) || (impacto ===6)) && ((probabilidade >=16) || (probabilidade ===18)) && (index===13)){
                         return "darkgreen";
                     }
                     if(((impacto ===5) || (impacto ===6)) && ((probabilidade ===19) || (probabilidade ===20)) && (index===14)){
@@ -71,10 +71,10 @@ ColumnLayout {
                     if(((impacto ===7) || (impacto ===8)) && ((probabilidade ===4) || (probabilidade ===5)) && (index===6)){
                         return "darkgreen";
                     }
-                    if(((impacto ===7) || (impacto ===8)) && ((probabilidade ===6) || (probabilidade ===15)) && (index===7)){
+                    if(((impacto ===7) || (impacto ===8)) && ((probabilidade ===6) || (probabilidade <=15)) && (index===7)){
                         return "darkgreen";
                     }
-                    if(((impacto ===7) || (impacto ===8)) && ((probabilidade ===16) || (probabilidade ===18)) && (index===8)){
+                    if(((impacto ===7) || (impacto ===8)) && ((probabilidade >=16) || (probabilidade ===18)) && (index===8)){
                         return "darkgreen";
                     }
                     if(((impacto ===7) || (impacto ===8)) && ((probabilidade ===19) || (probabilidade ===20)) && (index===9)){
@@ -86,10 +86,10 @@ ColumnLayout {
                     if(((impacto ===9) || (impacto ===10)) && ((probabilidade ===4) || (probabilidade ===5)) && (index===1)){
                         return "darkgreen";
                     }
-                    if(((impacto ===9) || (impacto ===10)) && ((probabilidade ===6) || (probabilidade ===15)) && (index===2)){
+                    if(((impacto ===9) || (impacto ===10)) && ((probabilidade ===6) || (probabilidade <=15)) && (index===2)){
                         return "darkgreen";
                     }
-                    if(((impacto ===9) || (impacto ===10)) && ((probabilidade ===16) || (probabilidade ===18)) && (index===3)){
+                    if(((impacto ===9) || (impacto ===10)) && ((probabilidade >=16) || (probabilidade ===18)) && (index===3)){
                         return "darkgreen";
                     }
                     if(((impacto ===9) || (impacto ===10)) && ((probabilidade ===19) || (probabilidade ===20)) && (index===4)){

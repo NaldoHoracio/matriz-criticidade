@@ -66,6 +66,8 @@ ApplicationWindow {
                         classificacaoAbc=form.getClassificacao();
                         impacto=funcao+risco;
                         probabilidade=classificacaoAbc+funcao;
+                        console.log(impacto);
+                        console.log(probabilidade);
                         screenStack.push(criticalityMatrixComponents);
                     }
                 }
