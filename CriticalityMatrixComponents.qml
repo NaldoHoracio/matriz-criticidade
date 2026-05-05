@@ -12,7 +12,7 @@ ColumnLayout {
         if(((impacto ===1) || (impacto ===2)) && ((probabilidade ===4) || (probabilidade ===5))){
             setBorderInTheRectangle(21);
         }
-        if(((impacto ===1) || (impacto ===2)) && ((probabilidade ===6) || (probabilidade <=15))){
+        if(((impacto ===1) || (impacto ===2)) && ((probabilidade >=6) && (probabilidade <=15))){
             setBorderInTheRectangle(22);
         }
         if(((impacto ===1) || (impacto ===2)) && ((probabilidade >=16) && (probabilidade <=18))){
@@ -27,7 +27,7 @@ ColumnLayout {
         if(((impacto ===3) || (impacto ===4)) && ((probabilidade ===4) || (probabilidade ===5))){
             setBorderInTheRectangle(16);
         }
-        if(((impacto ===3) || (impacto ===4)) && ((probabilidade ===6) || (probabilidade <=15))){
+        if(((impacto ===3) || (impacto ===4)) && ((probabilidade >=6) && (probabilidade <=15))){
             setBorderInTheRectangle(17);
         }
         if(((impacto === 3) || (impacto === 4)) && ((probabilidade >=16) && (probabilidade <=18))){
@@ -57,7 +57,7 @@ ColumnLayout {
         if(((impacto ===7) || (impacto ===8)) && ((probabilidade ===4) || (probabilidade ===5))){
             setBorderInTheRectangle(6);
         }
-        if(((impacto ===7) || (impacto ===8)) && ((probabilidade ===6) || (probabilidade <=15))){
+        if(((impacto ===7) || (impacto ===8)) && ((probabilidade >=6) && (probabilidade <=15))){
             setBorderInTheRectangle(7);
         }
         if(((impacto ===7) || (impacto ===8)) && ((probabilidade >=16) && (probabilidade <=18))){
