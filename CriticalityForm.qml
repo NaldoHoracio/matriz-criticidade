@@ -41,6 +41,29 @@ ColumnLayout {
                                 value=15;
                                 return value;
                             }
+                            if(mttr.value === "B"){
+                                value=5;
+                                return value;
+                            }
+                            if(mttr.value === "C"){
+                                value=1;
+                                return value;
+                            }
+                        }
+                        if(mttf.Value === "B"){
+                            console.log("mttf B");
+                            if((mttr.Value === "A") || (mttr.Value === "B")){
+                                value=5;
+                                return value;
+                            }
+                            if(mttr.Value === "C"){
+                                value=1;
+                                return value;
+                            }
+                        }
+                        if(mttf.Value === "C"){
+                            value=1;
+                            return value;
                         }
                     }
                     if(interrupcao.Value === "B"){
@@ -90,16 +113,15 @@ ColumnLayout {
         }
     }
     function printComboboxesValues(){
-        console.log(funcao.Value);
-        console.log(risco.Value);
-        console.log(riscoAbc.Value);
-        console.log(perdaAbc.Value);
-        console.log(tempo.Value);
-        console.log(interrupcao.Value);
-        console.log(mttf.Value);
-        console.log(mttr.Value);
+        console.log("risco "+riscoAbc.Value);
+        console.log("perda "+perdaAbc.Value);
+        console.log("tempo "+tempo.Value);
+        console.log("interrupção "+interrupcao.Value);
+        console.log("mttf "+mttf.Value);
+        console.log("mttr "+mttr.Value);
     }
     function calculateCriticity(){
+        printComboboxesValues();
         var AbcClassification=classifyAbc();
         var criticity=(funcao.Value+risco.Value)*(AbcClassification+funcao.Value);
         return criticity;
@@ -132,10 +154,6 @@ ColumnLayout {
                 Value:1
             }
         }
-        /*onActivated: {
-                console.log("Selected Text:", currentText)
-                console.log("Selected Index:", currentValue.Value)
-        }*/
         Layout.preferredWidth: 350
         Layout.alignment:  Qt.AlignHCenter
     }
