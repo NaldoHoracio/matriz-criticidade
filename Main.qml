@@ -22,24 +22,6 @@ ApplicationWindow {
         anchors.fill: parent
         initialItem: criticalityForm
     }
-    RowLayout{
-        anchors.bottom: parent.bottom
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottomMargin: 20
-        spacing:10
-        Button{
-            id:goToCriticalityForm
-            text: "form"
-            onClicked: screenStack.push(criticalityForm)
-        }
-        Button{
-            id:goToMatriz
-            text:"matriz"
-            onClicked: {
-                screenStack.push(criticalityMatrixComponents);
-            }
-        }
-    }
 
     Component{
         id:institutionSelect
@@ -80,10 +62,16 @@ ApplicationWindow {
             CriticalityMatrixComponents{
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-
                 Label {
                     id:criticality
                     text: criticityValue
+                }
+                Button{
+                    id:goBack
+                    text: "Voltar"
+                    onClicked: {
+                        screenStack.pop();
+                    }
                 }
             }
         }
