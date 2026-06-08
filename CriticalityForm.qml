@@ -204,8 +204,8 @@ ColumnLayout {
                 Value:"B"
             }
             ListElement{
-                    Name:"Risco descartado"
-                    Value:"C"
+                Name:"Risco descartado"
+                Value:"C"
             }
         }
         Layout.preferredWidth: 350
@@ -242,15 +242,15 @@ ColumnLayout {
         textRole:"Name"
         model:ListModel{
             ListElement{
-                Name:"24 horas/dia"
+                Name:"24 horas por dia"
                 Value:"A"
             }
             ListElement{
-                Name:"8 a 24 horas/dia"
+                Name:"8 a 24 horas por dia"
                 Value:"B"
             }
             ListElement{
-                Name:"menos que 8 horas/dia"
+                Name:"menos que 8 horas por dia"
                 Value:"C"
             }
         }
@@ -288,15 +288,15 @@ ColumnLayout {
         textRole:"Name"
         model:ListModel{
             ListElement{
-                Name:"Maior que 1 falha/2 meses"
+                Name:"Maior que 1 falha a cada 2 meses"
                 Value:"A"
             }
             ListElement{
-                Name:"1 falha/2 e 6 meses"
+                Name:"1 falha entre 2 e 6 meses"
                 Value:"B"
             }
             ListElement{
-                Name:"Menor que 1 falha/6 meses"
+                Name:"Menor que 1 falha a cada 6 meses"
                 Value:"C"
             }
         }

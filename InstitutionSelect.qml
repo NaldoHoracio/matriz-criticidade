@@ -2,23 +2,35 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-ColumnLayout {
+RowLayout {
     Layout.fillWidth: true
     Layout.fillHeight: true
     anchors.centerIn: parent
+    Component.onCompleted: {
+        AppController.setupDatabase();
+    }
     RowLayout{
         ColumnLayout{
             Button{
                 id:cadastrarInstituicao
                 text:qsTr("Cadastar nova instituição")
+                onClicked: {
+                    screenStack.push(insertInstitution);
+                }
             }
             Button{
                 id:cadastrarSetor
                 text:qsTr("Cadastar novo setor")
+                onClicked: {
+                    screenStack.push(insertSector);
+                }
             }
             Button{
                 id:cadastrarEquipamento
                 text:qsTr("Cadastar novo equipamento")
+                onClicked: {
+                    screenStack.push(insertEquipment);
+                }
             }
             Item {
                 Layout.fillHeight: true
@@ -37,7 +49,7 @@ ColumnLayout {
                 id:atualizarEquipamento
                 text:qsTr("Atualizar equipamento selecionado")
             }
-            ColumnLayout{
+            /*ColumnLayout{
                 ComboBox {
                     Layout.preferredWidth: 200
                     model: ["Instituição 1", "Instituição 2"]
@@ -61,7 +73,7 @@ ColumnLayout {
                     Layout.fillHeight: true
                     placeholderText: "Breve descrição..."
                 }
-            }
+            }*/
         }
         ColumnLayout{
             Button{

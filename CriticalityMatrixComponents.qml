@@ -85,8 +85,8 @@ ColumnLayout {
     function setBorderInTheRectangle(index){
         var item=criticalityMatrix.itemAt(index);
         if(item){
-            item.border.color="darkgreen";
-            item.border.width=15;
+            item.border.color="black";
+            item.border.width=8;
         }
     }
     Label {

@@ -20,13 +20,40 @@ ApplicationWindow {
     StackView{
         id:screenStack
         anchors.fill: parent
-        initialItem: criticalityForm
+        initialItem: institutionSelect
     }
 
     Component{
         id:institutionSelect
         Page{
             InstitutionSelect{
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+        }
+    }
+    Component{
+        id:insertInstitution
+        Page{
+            InsertInstitution{
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+        }
+    }
+    Component{
+        id:insertSector
+        Page{
+            InsertSector{
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+        }
+    }
+    Component{
+        id:insertEquipment
+        Page{
+            InsertEquipment{
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
