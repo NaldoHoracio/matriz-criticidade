@@ -201,7 +201,7 @@ void AppController::deleteTipoEquipamentos(int id_tipo_equipamento)
 void AppController::searchInstitutions()
 {
     QSqlQuery query;
-    query.prepare("SELECT * FROM instituicao;");
+    query.prepare("SELECT * FROM instituicao ORDER BY ID ASC;");
     query.exec();
     while (query.next()) {
         int id_instituicao=query.value(0).toInt();
@@ -213,7 +213,7 @@ void AppController::searchInstitutions()
 void AppController::searchSectors()
 {
     QSqlQuery query;
-    query.prepare("SELECT * FROM setor;");
+    query.prepare("SELECT * FROM setor ORDER BY ID ASC;");
     query.exec();
     while (query.next()) {
         int id_setor=query.value(0).toInt();
@@ -224,7 +224,7 @@ void AppController::searchSectors()
 void AppController::searchEquipments()
 {
     QSqlQuery query;
-    query.prepare("SELECT * FROM equipamento;");
+    query.prepare("SELECT * FROM equipamento ORDER BY ID ASC;");
     query.exec();
     while (query.next()) {
         int id_equipamento=query.value(0).toInt();
@@ -240,7 +240,7 @@ void AppController::searchEquipments()
 void AppController::searchTipoEquipamentos()
 {
     QSqlQuery query;
-    query.prepare("SELECT * FROM tipo_equipamento;");
+    query.prepare("SELECT * FROM tipo_equipamento ORDER BY ID ASC;");
     query.exec();
     while (query.next()) {
         int id_tipo_equipamento=query.value(0).toInt();
