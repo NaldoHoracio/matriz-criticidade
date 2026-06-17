@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import MatrizCriticidade
+import "pages"
+import "components"
 
 ApplicationWindow {
     visible: true

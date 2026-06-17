@@ -6,28 +6,32 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Quick)
 find_package(Qt6 REQUIRED COMPONENTS Sql)
+find_package(Qt6 REQUIRED COMPONENTS Test QuickTest)
 
+enable_testing()
 
 qt_standard_project_setup(REQUIRES 6.10)
 
 qt_add_executable(appMatrizCriticidade
-    main.cpp
+    src/main.cpp
 )
+
+target_include_directories(appMatrizCriticidade PRIVATE header)
 
 qt_add_qml_module(appMatrizCriticidade
     URI MatrizCriticidade
     QML_FILES
-        Main.qml
-        SOURCES appcontroller.h appcontroller.cpp
+        qml/Main.qml
+        SOURCES header/appcontroller.h src/appcontroller.cpp
         QML_FILES
-        QML_FILES CriticalityForm.qml
-        QML_FILES InstitutionSelect.qml
-        QML_FILES CriticalityMatrixComponents.qml
+        QML_FILES qml/pages/CriticalityForm.qml
+        QML_FILES qml/pages/InstitutionSelect.qml
+        QML_FILES qml/components/CriticalityMatrixComponents.qml
         QML_FILES
         QML_FILES
-        QML_FILES InsertInstitution.qml
-        QML_FILES InsertSector.qml
-        QML_FILES InsertEquipment.qml
+        QML_FILES qml/pages/InsertInstitution.qml
+        QML_FILES qml/pages/InsertSector.qml
+        QML_FILES qml/pages/InsertEquipment.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -52,3 +56,16 @@ install(TARGETS appMatrizCriticidade
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+# Testes em C++
+qt_add_executable(cpp_test tests/cpp/tst_appcontroller.cpp src/appcontroller.cpp)
+target_include_directories(cpp_test PRIVATE header)
+target_link_libraries(cpp_test PRIVATE Qt6::Test Qt6::Sql)
+add_test(NAME cpp_test COMMAND cpp_test)
+
+# Testes em QML
+qt_add_executable(qml_test tests/qml/tst_main.cpp)
+target_link_libraries(qml_test PRIVATE Qt6::QuickTest Qt6::Quick)
+# Define o caminho onde o runner (tst_main) procurará os arquivos de teste
+target_compile_definitions(qml_test PRIVATE QUICK_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/qml")
+add_test(NAME qml_test COMMAND qml_test)
