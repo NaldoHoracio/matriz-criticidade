@@ -14,7 +14,7 @@ qt_add_executable(CriticidadeApp
 )
 
 set_target_properties(CriticidadeApp PROPERTIES
-    OUTPUT_NAME "criticidade-app"
+    OUTPUT_NAME "MatrizCriticidade"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
