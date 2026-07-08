@@ -30,7 +30,7 @@ ColumnLayout {
         if(((impacto ===3) || (impacto ===4)) && ((probabilidade >=6) && (probabilidade <=15))){
             setBorderInTheRectangle(17);
         }
-        if(((impacto === 3) || (impacto === 4)) && ((probabilidade >=16) && (probabilidade <=18))){
+        if(((impacto ===3) || (impacto ===4)) && ((probabilidade >=16) && (probabilidade <=18))){
             setBorderInTheRectangle(18);
         }
         if(((impacto ===3) || (impacto ===4)) && ((probabilidade ===19) || (probabilidade ===20))){

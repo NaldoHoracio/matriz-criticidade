@@ -23,107 +23,113 @@ ColumnLayout {
         return classifyAbc();
     }
     function classifyAbc(){
-        var value;
-        if(riscoAbc.Value ==="A"){
-            value=15;
-            return value;
+        if(riscoAbc ==="A"){
+            return 15;
         }
-        if(riscoAbc.Value === "B" || riscoAbc.Value === "C"){
-            if(perdaAbc.Value === "A"){
-                value=15;
-                return value;
+        if(riscoAbc === "B" || riscoAbc === "C"){
+            if(perdaAbc === "A"){
+                return 15;
             }
-            if(perdaAbc.Value === "B" || perdaAbc.Value === "C"){
-                if(tempo.Value === "A" || tempo.Value === "B"){
-                    if(interrupcao.Value === "A"){
-                        if(mttf.Value === "A"){
-                            if(mttr.Value === "A"){
-                                value=15;
-                                return value;
+            if(perdaAbc === "B" || perdaAbc === "C"){
+                if(tempo === "A" || tempo === "B"){
+                    if(interrupcao === "A"){
+                        if(mttf === "A"){
+                            if(mttr === "A"){
+                                return 15;
                             }
-                            if(mttr.value === "B"){
-                                value=5;
-                                return value;
+                            if(mttr === "B"){
+                                return 5;
                             }
-                            if(mttr.value === "C"){
-                                value=1;
-                                return value;
+                            if(mttr === "C"){
+                                return 1;
                             }
                         }
-                        if(mttf.Value === "B"){
+                        if(mttf === "B"){
                             console.log("mttf B");
-                            if((mttr.Value === "A") || (mttr.Value === "B")){
-                                value=5;
-                                return value;
+                            if((mttr === "A") || (mttr === "B")){
+                                return 5;
                             }
-                            if(mttr.Value === "C"){
-                                value=1;
-                                return value;
+                            if(mttr === "C"){
+                                return 1;
                             }
                         }
-                        if(mttf.Value === "C"){
-                            value=1;
-                            return value;
+                        if(mttf === "C"){
+                            return 1;
                         }
                     }
-                    if(interrupcao.Value === "B"){
-                        if(mttf.Value ==="A" || mttf.Value ==="B"){
-                            if(mttr.Value === "A" || mttr.Value === "B"){
-                                value=5;
-                                return value;
+                    if(interrupcao === "B"){
+                        if(mttf ==="A" || mttf ==="B"){
+                            if(mttr === "A" || mttr === "B"){
+                                return 5;
                             }
-                            if(mttr.Value === "C"){
-                                value=1;
-                                return value;
+                            if(mttr === "C"){
+                                return 1;
                             }
                         }
-                        if(mttf.Value ==="C"){
-                            value=1;
-                            return value;
+                        if(mttf ==="C"){
+                            return 1;
                         }
                     }
-                    if(interrupcao.Value === "C"){
-                        value=1;
-                        return value;
+                    if(interrupcao === "C"){
+                        return 1;
                     }
                 }
-                if(tempo.Value === "C"){
-                    if(interrupcao.Value === "A" || interrupcao.Value === "B"){
-                        if(mttf.Value === "A" || mttf.Value === "B"){
-                            if(mttr.Value === "A" || mttr.Value === "B"){
-                                value=5;
-                                return value;
+                if(tempo === "C"){
+                    if(interrupcao === "A" || interrupcao === "B"){
+                        if(mttf === "A" || mttf === "B"){
+                            if(mttr === "A" || mttr === "B"){
+                                return 5;
                             }
-                            if(mttr.Value === "C"){
-                                value=1;
-                                return value;
+                            if(mttr === "C"){
+                                return 1;
                             }
                         }
-                        if(mttf.Value === "C"){
-                            value=1;
-                            return value;
+                        if(mttf === "C"){
+                            return 1;
                         }
                     }
-                    if(interrupcao.Value === "C"){
-                        value=1;
-                        return value;
+                    if(interrupcao === "C"){
+                        return 1;
                     }
                 }
             }
         }
     }
     function printComboboxesValues(){
-        console.log("risco "+riscoAbc.Value);
-        console.log("perda "+perdaAbc.Value);
-        console.log("tempo "+tempo.Value);
-        console.log("interrupção "+interrupcao.Value);
-        console.log("mttf "+mttf.Value);
-        console.log("mttr "+mttr.Value);
+        console.log("riscoAbc "+riscoAbc);
+        console.log("perdaAbc "+perdaAbc);
+        console.log("tempo "+tempo);
+        console.log("interrupcao "+interrupcao);
+        console.log("mttf "+mttf);
+        console.log("mttr "+mttr);
+    }
+    function loadData(data, intToAbc) {
+        setComboValue(funcaoCombobox, data.Funcao)
+        setComboValue(riscoCombobox, data.Risco)
+        setComboIndexByValue(riscoAbcCombobox, intToAbc(data.RiscoAbc))
+        setComboIndexByValue(perdaCombobox, intToAbc(data.PerdaAbc))
+        setComboIndexByValue(tempoFuncionamentoCombobox, intToAbc(data.Tempo))
+        setComboIndexByValue(interrupcaoCombobox, intToAbc(data.Interrupcao))
+        setComboIndexByValue(mttfCombobox, intToAbc(data.Mttf))
+        setComboIndexByValue(mtbrCombobox, intToAbc(data.Mttr))
+    }
+    function setInitialFuncao(valor) {
+        setComboValue(funcaoCombobox, valor)
+    }
+    function setComboValue(combo, value) {
+        for (var i = 0; i < combo.count; i++) {
+            if (combo.model.get(i)[combo.valueRole] === value) { combo.currentIndex = i; return }
+        }
+    }
+    function setComboIndexByValue(combo, value) {
+        for (var i = 0; i < combo.count; i++) {
+            if (combo.model.get(i)[combo.valueRole] === value) { combo.currentIndex = i; return }
+        }
     }
     function calculateCriticity(){
         printComboboxesValues();
         var AbcClassification=classifyAbc();
-        var criticity=(funcao.Value+risco.Value)*(AbcClassification+funcao.Value);
+        var criticity=(funcao+risco)*(AbcClassification+funcao);
         return criticity;
     }
     Text{
@@ -132,6 +138,7 @@ ColumnLayout {
     ComboBox {
         id:funcaoCombobox
         textRole:"Name"
+        valueRole:"Value"
         model:ListModel{
             ListElement{
                 Name:"Sistema de suporte à vida"
@@ -163,6 +170,7 @@ ColumnLayout {
     ComboBox {
         id:riscoCombobox
         textRole:"Name"
+        valueRole:"Value"
         model:ListModel{
             ListElement{
                 Name:"Morte"
@@ -173,8 +181,8 @@ ColumnLayout {
                 Value:4
             }
             ListElement{
-                    Name:"Lesão leve/moderada"
-                    Value:3
+                Name:"Lesão leve/moderada"
+                Value:3
             }
             ListElement{
                 Name:"Terapia ou diagnośtico falho"
@@ -194,6 +202,7 @@ ColumnLayout {
     ComboBox {
         id:riscoAbcCombobox
         textRole:"Name"
+        valueRole:"Value"
         model:ListModel{
             ListElement{
                 Name:"Risco Alto"
@@ -217,6 +226,7 @@ ColumnLayout {
     ComboBox {
         id:perdaCombobox
         textRole:"Name"
+        valueRole:"Value"
         model:ListModel{
             ListElement{
                 Name:"Risco Alto para perdas ou retrabalhos"
@@ -227,8 +237,8 @@ ColumnLayout {
                 Value:"B"
             }
             ListElement{
-                    Name:"Risco baixo ou descartado"
-                    Value:"C"
+                Name:"Risco baixo ou descartado"
+                Value:"C"
             }
         }
         Layout.preferredWidth: 350
@@ -240,6 +250,7 @@ ColumnLayout {
     ComboBox {
         id:tempoFuncionamentoCombobox
         textRole:"Name"
+        valueRole:"Value"
         model:ListModel{
             ListElement{
                 Name:"24 horas por dia"
@@ -263,6 +274,7 @@ ColumnLayout {
     ComboBox {
         id:interrupcaoCombobox
         textRole:"Name"
+        valueRole:"Value"
         model:ListModel{
             ListElement{
                 Name:"Interrompe todo processo de produção"
@@ -286,6 +298,7 @@ ColumnLayout {
     ComboBox {
         id:mttfCombobox
         textRole:"Name"
+        valueRole:"Value"
         model:ListModel{
             ListElement{
                 Name:"Maior que 1 falha a cada 2 meses"
@@ -309,6 +322,7 @@ ColumnLayout {
     ComboBox {
         id:mtbrCombobox
         textRole:"Name"
+        valueRole:"Value"
         model:ListModel{
             ListElement{
                 Name:"Maior que 2h"

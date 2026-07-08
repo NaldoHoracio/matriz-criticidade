@@ -1,21 +1,41 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <appcontroller.h>
-#include <qqmlcontext.h>
+#include <QQmlContext>
+#include <QPalette>
+#include <QColor>
+#include <QtQuickControls2/QQuickStyle>
+#include "DatabaseManager.h"
+#include "TableModel.h"
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
-    QQmlApplicationEngine engine;
-    AppController controller;
-    engine.rootContext()->setContextProperty("AppController", &controller);
-    QObject::connect(
-        &engine,
-        &QQmlApplicationEngine::objectCreationFailed,
-        &app,
-        []() { QCoreApplication::exit(-1); },
-        Qt::QueuedConnection);
-    engine.loadFromModule("MatrizCriticidade", "Main");
+    app.setOrganizationName("CriticidadeApp");
+    app.setApplicationName("MatrizCriticidade");
 
-    return QCoreApplication::exec();
+    QQuickStyle::setStyle("Material");
+
+    QPalette palette = app.palette();
+    palette.setColor(QPalette::Window, QColor("#f5f5f5"));
+    palette.setColor(QPalette::WindowText, QColor("#212121"));
+    palette.setColor(QPalette::Highlight, QColor("#2e7d32"));
+    palette.setColor(QPalette::HighlightedText, QColor("#ffffff"));
+    palette.setColor(QPalette::Button, QColor("#e0e0e0"));
+    palette.setColor(QPalette::ButtonText, QColor("#212121"));
+    app.setPalette(palette);
+
+    DatabaseManager dbManager;
+    if (!dbManager.initialize())
+        return -1;
+
+    qmlRegisterSingletonInstance("CriticidadeApp", 1, 0, "Database", &dbManager);
+    qmlRegisterType<TableModel>("CriticidadeApp", 1, 0, "TableModel");
+
+    QQmlApplicationEngine engine;
+    const QUrl url("qrc:/CriticidadeApp/App.qml");
+    QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,
+        &app, []() { QCoreApplication::exit(-1); });
+    engine.load(url);
+
+    return app.exec();
 }
