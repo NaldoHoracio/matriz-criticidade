@@ -1,508 +1,371 @@
 #include "DatabaseManager.h"
-#include <QSqlQuery>
-#include <QSqlError>
-#include <QSqlRecord>
+
 #include <QDebug>
-#include <QDir>
-#include <QStandardPaths>
+#include <QJSEngine>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QUrl>
+#include <QUrlQuery>
 
 DatabaseManager::DatabaseManager(QObject *parent)
     : QObject(parent)
 {
+    m_engine = qobject_cast<QJSEngine *>(parent);
+    m_nam = new QNetworkAccessManager(this);
 }
 
-DatabaseManager::~DatabaseManager()
+DatabaseManager::~DatabaseManager() = default;
+
+QString DatabaseManager::baseUrl() const
 {
-    if (m_db.isOpen())
-        m_db.close();
+    return m_baseUrl;
 }
 
-QString DatabaseManager::databasePath() const
+void DatabaseManager::setBaseUrl(const QString &url)
 {
-    return m_databasePath;
+    QString clean = url;
+    while (clean.endsWith(QLatin1Char('/')))
+        clean.chop(1);
+    if (m_baseUrl != clean) {
+        m_baseUrl = clean;
+        emit baseUrlChanged();
+    }
 }
 
-void DatabaseManager::setDatabasePath(const QString &path)
+bool DatabaseManager::busy() const
 {
-    if (m_databasePath != path) {
-        m_databasePath = path;
-        emit databasePathChanged();
+    return m_busy;
+}
+
+QUrl DatabaseManager::apiUrl(const QString &path) const
+{
+    return QUrl(m_baseUrl + path);
+}
+
+void DatabaseManager::setBusy(bool busy)
+{
+    if (m_busy != busy) {
+        m_busy = busy;
+        emit busyChanged();
     }
 }
 
 bool DatabaseManager::initialize()
 {
-    if (m_databasePath.isEmpty()) {
-        QString dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-        QDir().mkpath(dir);
-        m_databasePath = dir + "/criticidade.db";
-    }
-
-    if (m_db.isOpen())
-        m_db.close();
-
-    if (QSqlDatabase::contains("QSQLITE"))
-        QSqlDatabase::removeDatabase("QSQLITE");
-
-    m_db = QSqlDatabase::addDatabase("QSQLITE");
-    m_db.setDatabaseName(m_databasePath);
-
-    if (!m_db.open()) {
-        qWarning() << "Failed to open database:" << m_db.lastError().text();
-        return false;
-    }
-
-    QSqlQuery(m_db).exec("PRAGMA journal_mode=WAL");
-    QSqlQuery(m_db).exec("PRAGMA foreign_keys=ON");
-
-    createTables();
+    QUrl url = apiUrl(QStringLiteral("/api/health"));
+    get(url, [this](const QVariant &result) {
+        if (!result.isValid())
+            qWarning() << "[DatabaseManager] API indisponível em" << m_baseUrl;
+        else
+            qInfo() << "[DatabaseManager] API conectada em" << m_baseUrl;
+    });
     return true;
 }
 
-void DatabaseManager::execOrWarn(const QString &sql)
+QNetworkReply *DatabaseManager::get(const QUrl &url, const JsonCb &cb)
 {
-    QSqlQuery q(m_db);
-    if (!q.exec(sql))
-        qWarning() << "SQL Error:" << q.lastError().text() << "\nSQL:" << sql;
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
+    QNetworkReply *reply = m_nam->get(request);
+    ++m_pending;
+    setBusy(true);
+    connect(reply, &QNetworkReply::finished, this, [this, reply, cb]() { onReply(reply, cb); });
+    return reply;
 }
 
-void DatabaseManager::createTables()
+QNetworkReply *DatabaseManager::send(const QString &verb, const QUrl &url,
+                                     const QJsonObject &body, const JsonCb &cb)
 {
-    execOrWarn(R"(
-        CREATE TABLE IF NOT EXISTS empresa (
-            id_empresa INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome VARCHAR(200) NOT NULL,
-            cnpj VARCHAR(18) UNIQUE NOT NULL
-        )
-    )");
-    execOrWarn(R"(
-        CREATE TABLE IF NOT EXISTS setor (
-            id_setor INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome VARCHAR(150) NOT NULL,
-            id_empresa INTEGER NOT NULL,
-            FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa) ON DELETE CASCADE
-        )
-    )");
-    execOrWarn(R"(
-        CREATE TABLE IF NOT EXISTS tipo_equipamento (
-            id_tipo_equipamento INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome VARCHAR(200) NOT NULL UNIQUE,
-            descricao TEXT,
-            valor INTEGER DEFAULT 0
-        )
-    )");
-    {
-        QSqlQuery dedup(m_db);
-        dedup.exec("DELETE FROM tipo_equipamento WHERE rowid NOT IN (SELECT MIN(rowid) FROM tipo_equipamento GROUP BY nome)");
-        QStringList fixos = {"Apoio", "Análise", "Diagnóstico", "Terapia", "Sistema de Suporte à Vida"};
-        QList<int> valores = {1, 2, 3, 4, 5};
-        for (int i = 0; i < fixos.size(); ++i) {
-            QSqlQuery ins(m_db);
-            ins.prepare("INSERT INTO tipo_equipamento (nome, valor) SELECT ?, ? WHERE NOT EXISTS (SELECT 1 FROM tipo_equipamento WHERE nome = ?)");
-            ins.addBindValue(fixos[i]);
-            ins.addBindValue(valores[i]);
-            ins.addBindValue(fixos[i]);
-            ins.exec();
-            QSqlQuery upd(m_db);
-            upd.prepare("UPDATE tipo_equipamento SET valor = ? WHERE nome = ? AND valor <> ?");
-            upd.addBindValue(valores[i]);
-            upd.addBindValue(fixos[i]);
-            upd.addBindValue(valores[i]);
-            upd.exec();
-        }
-    }
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
+    const QByteArray payload = QJsonDocument(body).toJson(QJsonDocument::Compact);
 
-    execOrWarn(R"(
-        CREATE TABLE IF NOT EXISTS equipamento (
-            id_equipamento INTEGER PRIMARY KEY AUTOINCREMENT,
-            patrimonio VARCHAR(100),
-            modelo VARCHAR(200),
-            fabricante VARCHAR(200),
-            data_aquisicao DATE,
-            id_setor INTEGER NOT NULL,
-            id_tipo_equipamento INTEGER NOT NULL,
-            FOREIGN KEY (id_setor) REFERENCES setor(id_setor) ON DELETE CASCADE,
-            FOREIGN KEY (id_tipo_equipamento) REFERENCES tipo_equipamento(id_tipo_equipamento) ON DELETE CASCADE
-        )
-    )");
-    execOrWarn(R"(
-        CREATE TABLE IF NOT EXISTS criticidade (
-            id_criticidade INTEGER PRIMARY KEY AUTOINCREMENT,
-            Funcao INTEGER DEFAULT 0,
-            Risco INTEGER DEFAULT 0,
-            RiscoAbc INTEGER DEFAULT 0,
-            PerdaAbc INTEGER DEFAULT 0,
-            Tempo INTEGER DEFAULT 0,
-            Interrupcao INTEGER DEFAULT 0,
-            Mttf INTEGER DEFAULT 0,
-            Mttr INTEGER DEFAULT 0,
-            criticidade_final INTEGER DEFAULT 0,
-            id_equipamento INTEGER UNIQUE NOT NULL,
-            FOREIGN KEY (id_equipamento) REFERENCES equipamento(id_equipamento) ON DELETE CASCADE
-        )
-    )");
-    {
-        QStringList critCols = {"Funcao","Risco","RiscoAbc","PerdaAbc","Tempo","Interrupcao","Mttf","Mttr","criticidade_final"};
-        QStringList existingCritCols = columnNames("criticidade");
-        for (const QString &col : critCols) {
-            bool found = false;
-            for (const QString &e : existingCritCols) {
-                if (e.compare(col, Qt::CaseInsensitive) == 0) { found = true; break; }
-            }
-            if (!found)
-                execOrWarn(QString("ALTER TABLE criticidade ADD COLUMN %1 INTEGER DEFAULT 0").arg(col));
-        }
-    }
-    execOrWarn(R"(
-        CREATE TABLE IF NOT EXISTS historico_manutencao (
-            id_manutencao INTEGER PRIMARY KEY AUTOINCREMENT,
-            data_manutencao DATE NOT NULL,
-            tipo_manutencao VARCHAR(100),
-            descricao TEXT,
-            custo REAL DEFAULT 0,
-            responsavel VARCHAR(200),
-            observacoes TEXT,
-            id_equipamento INTEGER NOT NULL,
-            FOREIGN KEY (id_equipamento) REFERENCES equipamento(id_equipamento) ON DELETE CASCADE
-        )
-    )");
+    QNetworkReply *reply = nullptr;
+    if (verb == QLatin1String("POST"))
+        reply = m_nam->post(request, payload);
+    else if (verb == QLatin1String("PUT"))
+        reply = m_nam->put(request, payload);
+    else
+        reply = m_nam->deleteResource(request);
+
+    ++m_pending;
+    setBusy(true);
+    connect(reply, &QNetworkReply::finished, this, [this, reply, cb]() { onReply(reply, cb); });
+    return reply;
 }
 
-QVariantList DatabaseManager::fetchAll(const QString &table, const QString &orderBy)
+void DatabaseManager::onReply(QNetworkReply *reply, const JsonCb &cb)
 {
-    QVariantList result;
-    QString sql = "SELECT * FROM " + table;
+    const QString url = reply->url().toString();
+    const QNetworkReply::NetworkError err = reply->error();
+    const QByteArray body = reply->readAll();
+    reply->deleteLater();
+
+    --m_pending;
+    setBusy(m_pending > 0);
+
+    if (err != QNetworkReply::NoError) {
+        emit errorOccurred(url + QStringLiteral(" -> ") + reply->errorString());
+        if (cb)
+            cb(QVariant());
+        return;
+    }
+
+    QJsonParseError parseError;
+    const QJsonDocument doc = QJsonDocument::fromJson(body, &parseError);
+    if (parseError.error != QJsonParseError::NoError || doc.isNull()) {
+        emit errorOccurred(QStringLiteral("JSON inválido de %1").arg(url));
+        if (cb)
+            cb(QVariant());
+        return;
+    }
+
+    if (cb)
+        cb(doc.toVariant());
+}
+
+void DatabaseManager::invokeJs(const QJSValue &callback, const QVariant &result)
+{
+    if (!m_engine || !callback.isCallable())
+        return;
+    QJSValueList args;
+    args << m_engine->toScriptValue(result);
+    callback.call(args);
+}
+
+// ------------------------------------------------------------------ fetch
+
+void DatabaseManager::fetchAll(const QString &table, const QJSValue &callback)
+{
+    fetchAll(table, QString(), [this, callback](const QVariant &result) {
+        invokeJs(callback, result);
+    });
+}
+
+void DatabaseManager::fetchAll(const QString &table, const QString &orderBy, const JsonCb &cb)
+{
+    QUrl url = apiUrl(QStringLiteral("/api/tables/") + QUrl::toPercentEncoding(table));
+    if (!orderBy.isEmpty()) {
+        QUrlQuery query;
+        query.addQueryItem(QStringLiteral("order_by"), orderBy);
+        url.setQuery(query);
+    }
+    get(url, cb);
+}
+
+void DatabaseManager::fetchWhere(const QString &table, const QString &column,
+                                 const QVariant &value, const QJSValue &callback)
+{
+    fetchWhere(table, column, value, QString(), [this, callback](const QVariant &result) {
+        invokeJs(callback, result);
+    });
+}
+
+void DatabaseManager::fetchWhere(const QString &table, const QString &column,
+                                 const QVariant &value, const QString &orderBy,
+                                 const JsonCb &cb)
+{
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("column"), column);
+    query.addQueryItem(QStringLiteral("value"), value.toString());
     if (!orderBy.isEmpty())
-        sql += " ORDER BY " + orderBy;
+        query.addQueryItem(QStringLiteral("order_by"), orderBy);
 
-    QSqlQuery q(m_db);
-    q.exec(sql);
-
-    while (q.next()) {
-        QVariantMap row;
-        for (int i = 0; i < q.record().count(); ++i)
-            row.insert(q.record().fieldName(i), q.value(i));
-        result.append(row);
-    }
-    return result;
+    QUrl url = apiUrl(QStringLiteral("/api/tables/") + QUrl::toPercentEncoding(table)
+                      + QStringLiteral("/where"));
+    url.setQuery(query);
+    get(url, cb);
 }
 
-QVariantList DatabaseManager::fetchWhere(const QString &table, const QString &column, const QVariant &value, const QString &orderBy)
+void DatabaseManager::fetchById(const QString &table, int id, const QJSValue &callback)
 {
-    QVariantList result;
-    QString sql = "SELECT * FROM " + table + " WHERE " + column + " = ?";
-    if (!orderBy.isEmpty())
-        sql += " ORDER BY " + orderBy;
-
-    QSqlQuery q(m_db);
-    q.prepare(sql);
-    q.addBindValue(value);
-    if (!q.exec()) {
-        qWarning() << "fetchWhere error:" << q.lastError().text();
-        return result;
-    }
-
-    while (q.next()) {
-        QVariantMap row;
-        for (int i = 0; i < q.record().count(); ++i)
-            row.insert(q.record().fieldName(i), q.value(i));
-        result.append(row);
-    }
-    return result;
+    fetchById(table, id, [this, callback](const QVariantMap &result) {
+        invokeJs(callback, result);
+    });
 }
 
-QVariantMap DatabaseManager::fetchById(const QString &table, int id)
+void DatabaseManager::fetchById(const QString &table, int id,
+                                const std::function<void(const QVariantMap &)> &cb)
 {
-    QString pk = pkColumn(table);
-    QSqlQuery q(m_db);
-    q.prepare("SELECT * FROM " + table + " WHERE " + pk + " = ?");
-    q.addBindValue(id);
-    q.exec();
-
-    if (q.next()) {
-        QVariantMap row;
-        for (int i = 0; i < q.record().count(); ++i)
-            row.insert(q.record().fieldName(i), q.value(i));
-        return row;
-    }
-    return {};
+    QUrl url = apiUrl(QStringLiteral("/api/tables/") + QUrl::toPercentEncoding(table)
+                      + QStringLiteral("/") + QString::number(id));
+    get(url, [cb](const QVariant &result) { cb(result.toMap()); });
 }
 
-int DatabaseManager::createRecord(const QString &table, const QVariantMap &data)
+// ----------------------------------------------------------------- write
+
+void DatabaseManager::createRecord(const QString &table, const QVariantMap &data,
+                                   const QJSValue &callback)
 {
-    QString pk = pkColumn(table);
-    QStringList cols, ph;
-    QVariantList vals;
-
-    if (table == "tipo_equipamento" && data.contains("nome")) {
-        QSqlQuery dup(m_db);
-        dup.prepare("SELECT COUNT(*) FROM tipo_equipamento WHERE nome = ?");
-        dup.addBindValue(data.value("nome"));
-        if (dup.exec() && dup.next() && dup.value(0).toInt() > 0)
-            return -1;
-    }
-
-    for (auto it = data.begin(); it != data.end(); ++it) {
-        if (it.key() == pk)
-            continue;
-        cols << it.key();
-        ph << "?";
-        vals << it.value();
-    }
-
-    if (cols.isEmpty())
-        return -1;
-
-    QString sql = "INSERT INTO " + table + " (" + cols.join(", ") + ") VALUES (" + ph.join(", ") + ")";
-    QSqlQuery q(m_db);
-    q.prepare(sql);
-    for (const QVariant &v : vals)
-        q.addBindValue(v);
-
-    if (q.exec()) {
-        int id = q.lastInsertId().toInt();
-        emit dataChanged(table);
-        return id;
-    }
-    return -1;
+    createRecord(table, data, [this, callback](int id) { invokeJs(callback, id); });
 }
 
-bool DatabaseManager::updateRecord(const QString &table, int id, const QVariantMap &data)
+void DatabaseManager::createRecord(const QString &table, const QVariantMap &data,
+                                   const std::function<void(int)> &cb)
 {
-    QString pk = pkColumn(table);
-
-    if (table == "tipo_equipamento" && data.contains("nome")) {
-        QSqlQuery dup(m_db);
-        dup.prepare("SELECT COUNT(*) FROM tipo_equipamento WHERE nome = ? AND " + pk + " <> ?");
-        dup.addBindValue(data.value("nome"));
-        dup.addBindValue(id);
-        if (dup.exec() && dup.next() && dup.value(0).toInt() > 0)
-            return false;
-    }
-
-    QStringList sets;
-    QVariantList vals;
-
-    for (auto it = data.begin(); it != data.end(); ++it) {
-        if (it.key() == pk)
-            continue;
-        sets << it.key() + " = ?";
-        vals << it.value();
-    }
-
-    if (sets.isEmpty())
-        return false;
-
-    QString sql = "UPDATE " + table + " SET " + sets.join(", ") + " WHERE " + pk + " = ?";
-    QSqlQuery q(m_db);
-    q.prepare(sql);
-    for (const QVariant &v : vals)
-        q.addBindValue(v);
-    q.addBindValue(id);
-
-    if (q.exec()) {
-        emit dataChanged(table);
-        return true;
-    }
-    qWarning() << "Update error:" << q.lastError().text();
-    return false;
+    QUrl url = apiUrl(QStringLiteral("/api/tables/") + QUrl::toPercentEncoding(table));
+    send(QStringLiteral("POST"), url, QJsonObject::fromVariantMap(data),
+         [this, table, cb](const QVariant &result) {
+             const int id = result.toMap().value(QStringLiteral("id"), -1).toInt();
+             if (id >= 0)
+                 emit dataChanged(table);
+             if (cb)
+                 cb(id);
+         });
 }
 
-bool DatabaseManager::deleteRecord(const QString &table, int id)
+void DatabaseManager::updateRecord(const QString &table, int id, const QVariantMap &data,
+                                   const QJSValue &callback)
 {
-    QString pk = pkColumn(table);
-
-    QSqlQuery q(m_db);
-
-    if (table == "empresa") {
-        q.prepare("SELECT id_setor FROM setor WHERE id_empresa = ?");
-        q.addBindValue(id);
-        q.exec();
-        QList<int> setorIds;
-        while (q.next()) setorIds << q.value(0).toInt();
-        for (int sid : setorIds) {
-            q.prepare("DELETE FROM historico_manutencao WHERE id_equipamento IN (SELECT id_equipamento FROM equipamento WHERE id_setor = ?)");
-            q.addBindValue(sid); q.exec();
-            q.prepare("DELETE FROM criticidade WHERE id_equipamento IN (SELECT id_equipamento FROM equipamento WHERE id_setor = ?)");
-            q.addBindValue(sid); q.exec();
-            q.prepare("DELETE FROM equipamento WHERE id_setor = ?");
-            q.addBindValue(sid); q.exec();
-        }
-        q.prepare("DELETE FROM setor WHERE id_empresa = ?");
-        q.addBindValue(id); q.exec();
-        q.prepare("DELETE FROM empresa WHERE id_empresa = ?");
-        q.addBindValue(id);
-        if (q.exec()) {
-            emit dataChanged("empresa");
-            emit dataChanged("setor");
-            emit dataChanged("equipamento");
-            emit dataChanged("criticidade");
-            emit dataChanged("historico_manutencao");
-            return true;
-        }
-    } else if (table == "setor") {
-        q.prepare("DELETE FROM historico_manutencao WHERE id_equipamento IN (SELECT id_equipamento FROM equipamento WHERE id_setor = ?)");
-        q.addBindValue(id); q.exec();
-        q.prepare("DELETE FROM criticidade WHERE id_equipamento IN (SELECT id_equipamento FROM equipamento WHERE id_setor = ?)");
-        q.addBindValue(id); q.exec();
-        q.prepare("DELETE FROM equipamento WHERE id_setor = ?");
-        q.addBindValue(id); q.exec();
-        q.prepare("DELETE FROM setor WHERE id_setor = ?");
-        q.addBindValue(id);
-        if (q.exec()) {
-            emit dataChanged("setor");
-            emit dataChanged("equipamento");
-            emit dataChanged("criticidade");
-            emit dataChanged("historico_manutencao");
-            return true;
-        }
-    } else if (table == "equipamento") {
-        q.prepare("DELETE FROM historico_manutencao WHERE id_equipamento = ?");
-        q.addBindValue(id); q.exec();
-        q.prepare("DELETE FROM criticidade WHERE id_equipamento = ?");
-        q.addBindValue(id); q.exec();
-        q.prepare("DELETE FROM equipamento WHERE id_equipamento = ?");
-        q.addBindValue(id);
-        if (q.exec()) {
-            emit dataChanged("equipamento");
-            emit dataChanged("criticidade");
-            emit dataChanged("historico_manutencao");
-            return true;
-        }
-    } else {
-        q.prepare("DELETE FROM " + table + " WHERE " + pk + " = ?");
-        q.addBindValue(id);
-        if (q.exec()) {
-            emit dataChanged(table);
-            return true;
-        }
-    }
-
-    qWarning() << "Delete error:" << q.lastError().text();
-    return false;
+    updateRecord(table, id, data, [this, callback](bool ok) { invokeJs(callback, ok); });
 }
 
-QVariantList DatabaseManager::foreignOptions(const QString &table, const QString &displayColumn)
+void DatabaseManager::updateRecord(const QString &table, int id, const QVariantMap &data,
+                                   const std::function<void(bool)> &cb)
 {
-    QVariantList result;
-    QString pk = pkColumn(table);
-    QString orderCol = (table == "tipo_equipamento") ? "valor" : displayColumn;
-    QString sql = "SELECT " + pk + ", " + displayColumn + " FROM " + table + " ORDER BY " + orderCol;
-
-    QSqlQuery q(m_db);
-    q.exec(sql);
-    while (q.next()) {
-        QVariantMap item;
-        item["id"] = q.value(0);
-        item["display"] = q.value(1);
-        result.append(item);
-    }
-    return result;
+    QUrl url = apiUrl(QStringLiteral("/api/tables/") + QUrl::toPercentEncoding(table)
+                      + QStringLiteral("/") + QString::number(id));
+    send(QStringLiteral("PUT"), url, QJsonObject::fromVariantMap(data),
+         [this, table, cb](const QVariant &result) {
+             const bool ok = result.toMap().value(QStringLiteral("ok"), false).toBool();
+             if (ok)
+                 emit dataChanged(table);
+             if (cb)
+                 cb(ok);
+         });
 }
 
-QStringList DatabaseManager::distinctValues(const QString &table, const QString &column)
+void DatabaseManager::deleteRecord(const QString &table, int id, const QJSValue &callback)
 {
-    QStringList result;
-    QSqlQuery q(m_db);
-    q.prepare("SELECT DISTINCT " + column + " FROM " + table + " WHERE " + column + " IS NOT NULL AND " + column + " <> '' ORDER BY " + column);
-    if (q.exec()) {
-        while (q.next())
-            result << q.value(0).toString();
-    }
-    return result;
+    deleteRecord(table, id, [this, callback](bool ok) { invokeJs(callback, ok); });
 }
 
-QStringList DatabaseManager::columnNames(const QString &table)
+void DatabaseManager::deleteRecord(const QString &table, int id,
+                                   const std::function<void(bool)> &cb)
 {
-    QStringList cols;
-    QSqlQuery q(m_db);
-    q.exec("PRAGMA table_info(" + table + ")");
-    while (q.next())
-        cols << q.value(1).toString();
-    return cols;
+    QUrl url = apiUrl(QStringLiteral("/api/tables/") + QUrl::toPercentEncoding(table)
+                      + QStringLiteral("/") + QString::number(id));
+    send(QStringLiteral("DELETE"), url, {},
+         [this, table, cb](const QVariant &result) {
+             const bool ok = result.toMap().value(QStringLiteral("ok"), false).toBool();
+             if (ok) {
+                 emit dataChanged(table);
+                 // ON DELETE CASCADE also removes child rows server-side.
+                 if (table == QLatin1String("empresa")) {
+                     emit dataChanged(QStringLiteral("setor"));
+                     emit dataChanged(QStringLiteral("equipamento"));
+                     emit dataChanged(QStringLiteral("criticidade"));
+                     emit dataChanged(QStringLiteral("historico_manutencao"));
+                 } else if (table == QLatin1String("setor")) {
+                     emit dataChanged(QStringLiteral("equipamento"));
+                     emit dataChanged(QStringLiteral("criticidade"));
+                     emit dataChanged(QStringLiteral("historico_manutencao"));
+                 } else if (table == QLatin1String("equipamento")) {
+                     emit dataChanged(QStringLiteral("criticidade"));
+                     emit dataChanged(QStringLiteral("historico_manutencao"));
+                 }
+             }
+             if (cb)
+                 cb(ok);
+         });
 }
 
-int DatabaseManager::saveCriticidade(int equipamentoId, int funcao, int risco, int riscoAbc, int perdaAbc, int tempo, int interrupcao, int mttf, int mttr, int criticidadeFinal)
+// --------------------------------------------------------------- options
+
+void DatabaseManager::foreignOptions(const QString &table, const QString &displayColumn,
+                                     const QJSValue &callback)
 {
-    qWarning() << "saveCriticidade params:" << equipamentoId << funcao << risco << riscoAbc << perdaAbc << tempo << interrupcao << mttf << mttr << criticidadeFinal;
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("display"), displayColumn);
 
-    QSqlQuery check(m_db);
-    check.prepare("SELECT id_criticidade FROM criticidade WHERE id_equipamento = ?");
-    check.addBindValue(equipamentoId);
-    if (!check.exec()) {
-        qWarning() << "saveCriticidade check error:" << check.lastError().text();
-        return -1;
-    }
-
-    if (check.next()) {
-        QSqlQuery upd(m_db);
-        upd.prepare(
-            "UPDATE criticidade SET Funcao=?,Risco=?,RiscoAbc=?,PerdaAbc=?,Tempo=?,Interrupcao=?,Mttf=?,Mttr=?,criticidade_final=? "
-            "WHERE id_equipamento=?"
-        );
-        upd.addBindValue(funcao);
-        upd.addBindValue(risco);
-        upd.addBindValue(riscoAbc);
-        upd.addBindValue(perdaAbc);
-        upd.addBindValue(tempo);
-        upd.addBindValue(interrupcao);
-        upd.addBindValue(mttf);
-        upd.addBindValue(mttr);
-        upd.addBindValue(criticidadeFinal);
-        upd.addBindValue(equipamentoId);
-        if (!upd.exec()) {
-            qWarning() << "saveCriticidade UPDATE error:" << upd.lastError().text();
-            return -1;
-        }
-        qWarning() << "saveCriticidade: UPDATE sucesso equipamento" << equipamentoId;
-    } else {
-        QSqlQuery ins(m_db);
-        ins.prepare(
-            "INSERT INTO criticidade (Funcao,Risco,RiscoAbc,PerdaAbc,Tempo,Interrupcao,Mttf,Mttr,criticidade_final,id_equipamento) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?)"
-        );
-        ins.addBindValue(funcao);
-        ins.addBindValue(risco);
-        ins.addBindValue(riscoAbc);
-        ins.addBindValue(perdaAbc);
-        ins.addBindValue(tempo);
-        ins.addBindValue(interrupcao);
-        ins.addBindValue(mttf);
-        ins.addBindValue(mttr);
-        ins.addBindValue(criticidadeFinal);
-        ins.addBindValue(equipamentoId);
-        if (!ins.exec()) {
-            qWarning() << "saveCriticidade INSERT error:" << ins.lastError().text();
-            return -1;
-        }
-        qWarning() << "saveCriticidade: INSERT sucesso equipamento" << equipamentoId;
-    }
-
-    emit dataChanged("criticidade");
-    return 1;
+    QUrl url = apiUrl(QStringLiteral("/api/tables/") + QUrl::toPercentEncoding(table)
+                      + QStringLiteral("/options"));
+    url.setQuery(query);
+    get(url, [this, callback](const QVariant &result) { invokeJs(callback, result); });
 }
 
-QVariantMap DatabaseManager::fetchCriticidadeByEquipamento(int equipamentoId)
+void DatabaseManager::distinctValues(const QString &table, const QString &column,
+                                     const QJSValue &callback)
 {
-    QSqlQuery q(m_db);
-    q.prepare("SELECT * FROM criticidade WHERE id_equipamento = ?");
-    q.addBindValue(equipamentoId);
-    if (q.exec() && q.next()) {
-        QVariantMap row;
-        for (int i = 0; i < q.record().count(); ++i)
-            row.insert(q.record().fieldName(i), q.value(i));
-        qDebug() << "fetchCriticidadeByEquipamento(" << equipamentoId << "): found id_criticidade=" << row.value("id_criticidade").toInt();
-        return row;
-    }
-    qDebug() << "fetchCriticidadeByEquipamento(" << equipamentoId << "): NOT FOUND";
-    return {};
+    QUrlQuery query;
+    query.addQueryItem(QStringLiteral("column"), column);
+
+    QUrl url = apiUrl(QStringLiteral("/api/tables/") + QUrl::toPercentEncoding(table)
+                      + QStringLiteral("/distinct"));
+    url.setQuery(query);
+    get(url, [this, callback](const QVariant &result) { invokeJs(callback, result); });
 }
 
-QString DatabaseManager::pkColumn(const QString &table)
+void DatabaseManager::columnNames(const QString &table, const QJSValue &callback)
 {
-    QSqlQuery q(m_db);
-    q.exec("PRAGMA table_info(" + table + ")");
-    if (q.next())
-        return q.value(1).toString();
-    return "id";
+    columnNames(table, [this, callback](const QStringList &cols) {
+        invokeJs(callback, QVariant(cols));
+    });
+}
+
+void DatabaseManager::columnNames(const QString &table,
+                                  const std::function<void(const QStringList &)> &cb)
+{
+    QUrl url = apiUrl(QStringLiteral("/api/tables/") + QUrl::toPercentEncoding(table)
+                      + QStringLiteral("/columns"));
+    get(url, [cb](const QVariant &result) {
+        QStringList cols;
+        const QVariantList list = result.toList();
+        for (const QVariant &v : list)
+            cols << v.toString();
+        cb(cols);
+    });
+}
+
+void DatabaseManager::pkColumn(const QString &table, const QJSValue &callback)
+{
+    pkColumn(table, [this, callback](const QString &pk) { invokeJs(callback, pk); });
+}
+
+void DatabaseManager::pkColumn(const QString &table,
+                               const std::function<void(const QString &)> &cb)
+{
+    QUrl url = apiUrl(QStringLiteral("/api/tables/") + QUrl::toPercentEncoding(table)
+                      + QStringLiteral("/pk"));
+    get(url, [cb](const QVariant &result) {
+        cb(result.toMap().value(QStringLiteral("pk")).toString());
+    });
+}
+
+// ------------------------------------------------------------ criticidade
+
+void DatabaseManager::saveCriticidade(int equipamentoId, int funcao, int risco,
+                                      int riscoAbc, int perdaAbc, int tempo,
+                                      int interrupcao, int mttf, int mttr,
+                                      int criticidadeFinal, const QJSValue &callback)
+{
+    QJsonObject body;
+    body.insert(QStringLiteral("equipamentoId"), equipamentoId);
+    body.insert(QStringLiteral("funcao"), funcao);
+    body.insert(QStringLiteral("risco"), risco);
+    body.insert(QStringLiteral("riscoAbc"), riscoAbc);
+    body.insert(QStringLiteral("perdaAbc"), perdaAbc);
+    body.insert(QStringLiteral("tempo"), tempo);
+    body.insert(QStringLiteral("interrupcao"), interrupcao);
+    body.insert(QStringLiteral("mttf"), mttf);
+    body.insert(QStringLiteral("mttr"), mttr);
+    body.insert(QStringLiteral("criticidadeFinal"), criticidadeFinal);
+
+    QUrl url = apiUrl(QStringLiteral("/api/criticidade/save"));
+    send(QStringLiteral("POST"), url, body, [this, callback](const QVariant &result) {
+        if (result.toMap().value(QStringLiteral("ok"), false).toBool())
+            emit dataChanged(QStringLiteral("criticidade"));
+        invokeJs(callback, result);
+    });
+}
+
+void DatabaseManager::fetchCriticidadeByEquipamento(int equipamentoId,
+                                                    const QJSValue &callback)
+{
+    QUrl url = apiUrl(QStringLiteral("/api/criticidade/equipamento/")
+                      + QString::number(equipamentoId));
+    get(url, [this, callback](const QVariant &result) { invokeJs(callback, result); });
 }

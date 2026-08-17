@@ -24,14 +24,15 @@ int main(int argc, char *argv[])
     palette.setColor(QPalette::ButtonText, QColor("#212121"));
     app.setPalette(palette);
 
-    DatabaseManager dbManager;
+    QQmlApplicationEngine engine;
+    DatabaseManager dbManager(&engine);
+    dbManager.setBaseUrl(qEnvironmentVariable("CRITICIDADE_API_URL", "http://localhost:8000"));
     if (!dbManager.initialize())
         return -1;
 
     qmlRegisterSingletonInstance("CriticidadeApp", 1, 0, "Database", &dbManager);
     qmlRegisterType<TableModel>("CriticidadeApp", 1, 0, "TableModel");
 
-    QQmlApplicationEngine engine;
     const QUrl url("qrc:/CriticidadeApp/App.qml");
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,
         &app, []() { QCoreApplication::exit(-1); });

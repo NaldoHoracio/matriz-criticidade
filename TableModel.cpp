@@ -96,69 +96,77 @@ void TableModel::refresh()
     if (m_tableName.isEmpty() || !m_db)
         return;
 
-    beginResetModel();
-    m_columns = m_db->columnNames(m_tableName);
-    QVariantList rows;
-    if (m_filterColumn.isEmpty())
-        rows = m_db->fetchAll(m_tableName, m_orderBy);
-    else
-        rows = m_db->fetchWhere(m_tableName, m_filterColumn, m_filterValue, m_orderBy);
-    m_rows.clear();
-    for (const QVariant &row : rows) {
-        QVariantMap map = row.toMap();
-        QVariantList values;
-        for (const QString &col : m_columns)
-            values.append(map.value(col));
-        m_rows.append(values);
-    }
-    endResetModel();
-    m_revision++;
-    emit revisionChanged();
-    emit countChanged();
+    const int seq = ++m_requestSeq;
+    if (m_pkColumn.isEmpty())
+        m_db->pkColumn(m_tableName, [this](const QString &pk) { m_pkColumn = pk; });
+
+    m_db->columnNames(m_tableName, [this, seq](const QStringList &cols) {
+        if (seq != m_requestSeq)
+            return;
+        m_columns = cols;
+
+        auto onRows = [this, seq](const QVariantList &rows) {
+            if (seq != m_requestSeq)
+                return;
+            beginResetModel();
+            m_rows.clear();
+            for (const QVariant &row : rows) {
+                const QVariantMap map = row.toMap();
+                QVariantList values;
+                for (const QString &col : m_columns)
+                    values.append(map.value(col));
+                m_rows.append(values);
+            }
+            endResetModel();
+            m_revision++;
+            emit revisionChanged();
+            emit countChanged();
+        };
+
+        if (m_filterColumn.isEmpty()) {
+            m_db->fetchAll(m_tableName, m_orderBy,
+                           [onRows](const QVariant &result) { onRows(result.toList()); });
+        } else {
+            m_db->fetchWhere(m_tableName, m_filterColumn, m_filterValue, m_orderBy,
+                             [onRows](const QVariant &result) { onRows(result.toList()); });
+        }
+    });
 }
 
-bool TableModel::create(const QVariantMap &data)
+void TableModel::create(const QVariantMap &data)
 {
     if (!m_db)
-        return false;
-    int id = m_db->createRecord(m_tableName, data);
-    if (id >= 0) {
-        refresh();
-        return true;
-    }
-    return false;
+        return;
+    m_db->createRecord(m_tableName, data, [this](int id) {
+        if (id >= 0)
+            refresh();
+    });
 }
 
-bool TableModel::update(int row, const QVariantMap &data)
+void TableModel::update(int row, const QVariantMap &data)
 {
-    if (!m_db || row < 0 || row >= m_rows.size())
-        return false;
+    if (!m_db || row < 0 || row >= m_rows.size() || m_pkColumn.isEmpty())
+        return;
 
-    QVariantMap rowData = get(row);
-    QString pk = m_db->pkColumn(m_tableName);
-    int id = rowData.value(pk).toInt();
+    const int id = get(row).value(m_pkColumn).toInt();
 
-    if (m_db->updateRecord(m_tableName, id, data)) {
-        refresh();
-        return true;
-    }
-    return false;
+    m_db->updateRecord(m_tableName, id, data, [this](bool ok) {
+        if (ok)
+            refresh();
+    });
 }
 
-bool TableModel::remove(int row)
+void TableModel::remove(int row)
 {
-    if (!m_db || row < 0 || row >= m_rows.size())
-        return false;
+    if (!m_db || row < 0 || row >= m_rows.size() || m_pkColumn.isEmpty())
+        return;
 
-    QVariantMap rowData = get(row);
-    QString pk = m_db->pkColumn(m_tableName);
-    int id = rowData.value(pk).toInt();
+    const int id = get(row).value(m_pkColumn).toInt();
 
-    if (m_db->deleteRecord(m_tableName, id)) {
-        refresh();
-        return true;
-    }
-    return false;
+    m_db->deleteRecord(m_tableName, id, [this](bool ok) {
+        if (ok)
+            refresh();
+    });
 }
 
 QVariantMap TableModel::get(int row) const

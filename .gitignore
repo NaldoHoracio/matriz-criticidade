@@ -3,3 +3,4 @@ build-debug/
 *.o
 mocs_compilation.cpp
 .env
+__pycache__/

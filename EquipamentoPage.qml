@@ -34,29 +34,31 @@ Page {
 
     function refresh() {
         if (filterEmpresaId >= 0) {
-            var rows = Database.fetchWhere("setor", "id_empresa", filterEmpresaId)
-            var opts = []
-            for (var i = 0; i < rows.length; i++) opts.push({ id: rows[i].id_setor, display: rows[i].nome })
-            setores = opts
+            Database.fetchWhere("setor", "id_empresa", filterEmpresaId, function(rows) {
+                var opts = []
+                for (var i = 0; i < rows.length; i++) opts.push({ id: rows[i].id_setor, display: rows[i].nome })
+                setores = opts
+            })
         } else {
-            setores = Database.foreignOptions("setor", "nome")
+            Database.foreignOptions("setor", "nome", function(opts) { setores = opts })
         }
-        tipos = Database.foreignOptions("tipo_equipamento", "nome")
-        modelList = Database.distinctValues("equipamento", "modelo")
-        fabricanteList = Database.distinctValues("equipamento", "fabricante")
-        var critRows = Database.fetchAll("criticidade")
-        criticidadeLookup = []
-        criticidadeMap = ({})
-        console.log("DEBUG criticRows:", JSON.stringify(critRows))
-        for (var ci = 0; ci < critRows.length; ci++) {
-            var equipId = critRows[ci]["id_equipamento"]
-            var critVal = critRows[ci]["criticidade_final"]
-            console.log("DEBUG critRow:", equipId, "->", critVal)
-            criticidadeLookup.push({ id: equipId, display: String(critVal) })
-            criticidadeMap[equipId] = String(critVal)
-        }
-        console.log("DEBUG criticidadeLookup:", JSON.stringify(criticidadeLookup))
-        console.log("DEBUG criticidadeMap:", JSON.stringify(criticidadeMap))
+        Database.foreignOptions("tipo_equipamento", "nome", function(opts) { tipos = opts })
+        Database.distinctValues("equipamento", "modelo", function(vals) { modelList = vals })
+        Database.distinctValues("equipamento", "fabricante", function(vals) { fabricanteList = vals })
+        Database.fetchAll("criticidade", function(critRows) {
+            criticidadeLookup = []
+            criticidadeMap = ({})
+            console.log("DEBUG criticRows:", JSON.stringify(critRows))
+            for (var ci = 0; ci < critRows.length; ci++) {
+                var equipId = critRows[ci]["id_equipamento"]
+                var critVal = critRows[ci]["criticidade_final"]
+                console.log("DEBUG critRow:", equipId, "->", critVal)
+                criticidadeLookup.push({ id: equipId, display: String(critVal) })
+                criticidadeMap[equipId] = String(critVal)
+            }
+            console.log("DEBUG criticidadeLookup:", JSON.stringify(criticidadeLookup))
+            console.log("DEBUG criticidadeMap:", JSON.stringify(criticidadeMap))
+        })
         applyFilter()
         syncTimer.restart()
     }
@@ -257,19 +259,20 @@ Page {
                     onActivated: function(index) {
                         var modelName = modelField.editText
                         if (!modelName) return
-                        var existing = Database.fetchWhere("equipamento", "modelo", modelName)
-                        if (existing.length > 0) {
-                            var e = existing[0]
-                            fabField.editText = e.fabricante || ""
-                            if (filterSetorId < 0 && e.id_setor) {
-                                for (var i = 0; i < setorCombo.model.length; i++) {
-                                    if (setorCombo.model[i].id === e.id_setor) { setorCombo.currentIndex = i; break }
+                        Database.fetchWhere("equipamento", "modelo", modelName, function(existing) {
+                            if (existing.length > 0) {
+                                var e = existing[0]
+                                fabField.editText = e.fabricante || ""
+                                if (filterSetorId < 0 && e.id_setor) {
+                                    for (var i = 0; i < setorCombo.model.length; i++) {
+                                        if (setorCombo.model[i].id === e.id_setor) { setorCombo.currentIndex = i; break }
+                                    }
+                                }
+                                for (var j = 0; j < tipoCombo.model.length; j++) {
+                                    if (tipoCombo.model[j].id === e.id_tipo_equipamento) { tipoCombo.currentIndex = j; break }
                                 }
                             }
-                            for (var j = 0; j < tipoCombo.model.length; j++) {
-                                if (tipoCombo.model[j].id === e.id_tipo_equipamento) { tipoCombo.currentIndex = j; break }
-                            }
-                        }
+                        })
                     }
                 }
                 Button { text: "Limpar"; flat: true; font.pixelSize: 11; anchors.right: parent.right; onClicked: { modelField.editText = ""; modelField.currentIndex = -1 } }

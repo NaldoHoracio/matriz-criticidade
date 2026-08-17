@@ -45,9 +45,9 @@ public:
     int revision() const { return m_revision; }
 
     Q_INVOKABLE void refresh();
-    Q_INVOKABLE bool create(const QVariantMap &data);
-    Q_INVOKABLE bool update(int row, const QVariantMap &data);
-    Q_INVOKABLE bool remove(int row);
+    Q_INVOKABLE void create(const QVariantMap &data);
+    Q_INVOKABLE void update(int row, const QVariantMap &data);
+    Q_INVOKABLE void remove(int row);
     Q_INVOKABLE QVariantMap get(int row) const;
     Q_INVOKABLE int columnCountForTable() const;
     Q_INVOKABLE QString columnName(int col) const;
@@ -68,7 +68,9 @@ private:
     QVariant m_filterValue;
     DatabaseManager *m_db = nullptr;
     QStringList m_columns;
+    QString m_pkColumn;
     QVector<QVariantList> m_rows;
+    int m_requestSeq = 0;
 };
 
 #endif

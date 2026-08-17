@@ -15,7 +15,7 @@ Page {
 
     function refresh() {
         histModel.refresh()
-        equipamentos = Database.foreignOptions("equipamento", "patrimonio")
+        Database.foreignOptions("equipamento", "patrimonio", function(opts) { equipamentos = opts })
     }
 
     Component.onCompleted: refresh()

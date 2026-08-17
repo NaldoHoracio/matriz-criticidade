@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Sql QuickControls2)
+find_package(Qt6 REQUIRED COMPONENTS Quick Qml Network QuickControls2)
 
 qt_add_executable(CriticidadeApp
     main.cpp
@@ -40,9 +40,25 @@ qt_add_qml_module(CriticidadeApp
 
 target_link_libraries(CriticidadeApp PRIVATE
     Qt6::Quick
-    Qt6::Sql
+    Qt6::Qml
+    Qt6::Network
     Qt6::QuickControls2
 )
+
+if(EMSCRIPTEN)
+    target_link_options(CriticidadeApp PRIVATE
+        "SHELL:-sALLOW_MEMORY_GROWTH=1"
+        "SHELL:-sFETCH=1"
+    )
+    add_custom_command(TARGET CriticidadeApp POST_BUILD
+        COMMAND ${CMAKE_COMMAND}
+            -DINPUT_HTML=$<TARGET_FILE_DIR:CriticidadeApp>/MatrizCriticidade.html
+            -DLOGO=${CMAKE_CURRENT_SOURCE_DIR}/icons/matriz_icon_256.png
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_wasm_shell.cmake
+        VERBATIM
+    )
+    qt_finalize_executable(CriticidadeApp)
+endif()
 
 install(TARGETS CriticidadeApp
     BUNDLE DESTINATION .

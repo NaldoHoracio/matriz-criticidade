@@ -14,7 +14,7 @@ Page {
     }
 
     function refresh() {
-        equipamentos = Database.foreignOptions("equipamento", "modelo")
+        Database.foreignOptions("equipamento", "modelo", function(opts) { equipamentos = opts })
         critModel.refresh()
     }
 

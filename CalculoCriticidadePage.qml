@@ -43,9 +43,11 @@ Page {
             abcToInt(page.interrupcaoStr),
             abcToInt(page.mttfStr),
             abcToInt(page.mttrStr),
-            page.criticityValue
+            page.criticityValue,
+            function(res) {
+                console.log("  saveCriticidade resultado:", JSON.stringify(res))
+            }
         )
-        console.log("  saveCriticidade resultado:", result)
     }
 
     function intToAbc(val) {
@@ -186,32 +188,38 @@ Page {
 
     Component.onCompleted: {
         console.log("Pagina criada para equipamento ID:", page.equipamentoId, "nome:", page.equipamentoNome)
-        var allData = Database.fetchAll("criticidade")
-        console.log("TODOS registros criticidade:", JSON.stringify(allData))
-        var d = Database.fetchCriticidadeByEquipamento(page.equipamentoId)
-        console.log("fetchCriticidadeByEquipamento:", JSON.stringify(d))
-        if (d && d.id_criticidade !== undefined) {
-            page.funcao = d.Funcao || 0
-            page.risco = d.Risco || 0
-            page.criticityValue = d.criticidade_final || 0
-            page.impacto = page.funcao + page.risco
-            page.probabilidade = page.impacto > 0 ? Math.round(page.criticityValue / page.impacto) : 0
-            page.equipamentoSelecionado = page.equipamentoNome
-            criticityValue = page.criticityValue
-            impacto = page.impacto
-            probabilidade = page.probabilidade
-            equipamentoSelecionado = page.equipamentoNome
-            screenStack.push(criticalityFormView, { existingData: d })
-            screenStack.push(criticalityMatrixView)
-        } else {
-            var equip = Database.fetchById("equipamento", page.equipamentoId)
-            var funcaoVal = 1
-            if (equip && equip.id_tipo_equipamento > 0) {
-                var tipo = Database.fetchById("tipo_equipamento", equip.id_tipo_equipamento)
-                if (tipo && tipo.valor > 0) funcaoVal = tipo.valor
+        Database.fetchAll("criticidade", function(allData) {
+            console.log("TODOS registros criticidade:", JSON.stringify(allData))
+        })
+        Database.fetchCriticidadeByEquipamento(page.equipamentoId, function(d) {
+            console.log("fetchCriticidadeByEquipamento:", JSON.stringify(d))
+            if (d && d.id_criticidade !== undefined) {
+                page.funcao = d.Funcao || 0
+                page.risco = d.Risco || 0
+                page.criticityValue = d.criticidade_final || 0
+                page.impacto = page.funcao + page.risco
+                page.probabilidade = page.impacto > 0 ? Math.round(page.criticityValue / page.impacto) : 0
+                page.equipamentoSelecionado = page.equipamentoNome
+                criticityValue = page.criticityValue
+                impacto = page.impacto
+                probabilidade = page.probabilidade
+                equipamentoSelecionado = page.equipamentoNome
+                screenStack.push(criticalityFormView, { existingData: d })
+                screenStack.push(criticalityMatrixView)
+            } else {
+                Database.fetchById("equipamento", page.equipamentoId, function(equip) {
+                    var funcaoVal = 1
+                    if (equip && equip.id_tipo_equipamento > 0) {
+                        Database.fetchById("tipo_equipamento", equip.id_tipo_equipamento, function(tipo) {
+                            if (tipo && tipo.valor > 0) funcaoVal = tipo.valor
+                            screenStack.push(criticalityFormView, { funcaoInicial: funcaoVal })
+                        })
+                    } else {
+                        screenStack.push(criticalityFormView, { funcaoInicial: funcaoVal })
+                    }
+                })
             }
-            screenStack.push(criticalityFormView, { funcaoInicial: funcaoVal })
-        }
+        })
     }
 
     StackView {

@@ -26,11 +26,13 @@ Page {
             setorModel.setFilter("id_empresa", filterEmpresaId)
         else
             setorModel.refresh()
-        empresas = Database.foreignOptions("empresa", "nome")
-        tipos = Database.foreignOptions("tipo_equipamento", "nome")
-        modelList = Database.distinctValues("equipamento", "modelo")
-        fabricanteList = Database.distinctValues("equipamento", "fabricante")
-        Qt.callLater(syncEmpresaFiltro)
+        Database.foreignOptions("tipo_equipamento", "nome", function(opts) { tipos = opts })
+        Database.distinctValues("equipamento", "modelo", function(vals) { modelList = vals })
+        Database.distinctValues("equipamento", "fabricante", function(vals) { fabricanteList = vals })
+        Database.foreignOptions("empresa", "nome", function(opts) {
+            empresas = opts
+            syncEmpresaFiltro()
+        })
     }
 
     function syncEmpresaFiltro() {
@@ -269,14 +271,15 @@ Page {
                     onActivated: function(index) {
                         var modelName = modelField.editText
                         if (!modelName) return
-                        var existing = Database.fetchWhere("equipamento", "modelo", modelName)
-                        if (existing.length > 0) {
-                            var e = existing[0]
-                            fabField.editText = e.fabricante || ""
-                            for (var j = 0; j < tipoCombo.model.length; j++) {
-                                if (tipoCombo.model[j].id === e.id_tipo_equipamento) { tipoCombo.currentIndex = j; break }
+                        Database.fetchWhere("equipamento", "modelo", modelName, function(existing) {
+                            if (existing.length > 0) {
+                                var e = existing[0]
+                                fabField.editText = e.fabricante || ""
+                                for (var j = 0; j < tipoCombo.model.length; j++) {
+                                    if (tipoCombo.model[j].id === e.id_tipo_equipamento) { tipoCombo.currentIndex = j; break }
+                                }
                             }
-                        }
+                        })
                     }
                 }
                 Button { text: "Limpar"; flat: true; font.pixelSize: 11; anchors.right: parent.right; onClicked: { modelField.editText = ""; modelField.currentIndex = -1 } }
