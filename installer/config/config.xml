@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Installer>
+    <Name>Matriz de Criticidade</Name>
+    <Version>1.0.0</Version>
+    <Title>Matriz de Criticidade - Instalação</Title>
+    <Publisher>IFAL</Publisher>
+    <StartMenuDir>Matriz de Criticidade</StartMenuDir>
+    <TargetDir>@HomeDir@/MatrizCriticidade</TargetDir>
+    <ProductUrl>https://www.ifal.edu.br</ProductUrl>
+    <MaintenanceToolName>maintenancetool</MaintenanceToolName>
+</Installer>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+    <DisplayName>Matriz de Criticidade</DisplayName>
+    <Description>Aplicação para gestão de matriz de criticidade de equipamentos hospitalares.</Description>
+    <Version>1.0.0</Version>
+    <ReleaseDate>2026-08-16</ReleaseDate>
+    <Default>true</Default>
+    <Icon>matriz_icon.ico</Icon>
+    <Script>installscript.qs</Script>
+</Package>

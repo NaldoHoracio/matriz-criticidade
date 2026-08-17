@@ -36,7 +36,14 @@ qt_add_qml_module(CriticidadeApp
         CalculoCriticidadePage.qml
     RESOURCES
         ifal_logo.png
+        icons/matriz_icon_256.png
+        icons/matriz_icon_32.png
+        icons/matriz_icon_16.png
 )
+
+if(WIN32)
+    target_sources(CriticidadeApp PRIVATE windows.rc)
+endif()
 
 target_link_libraries(CriticidadeApp PRIVATE
     Qt6::Quick
