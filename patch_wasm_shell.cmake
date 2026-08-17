@@ -9,4 +9,8 @@ string(REPLACE
     "<strong>Qt for WebAssembly: MatrizCriticidade</strong>"
     "<strong>Matriz de Criticidade</strong>"
     content "${content}")
+string(REPLACE
+    "<title>MatrizCriticidade</title>"
+    "<title>MatrizCriticidade</title>\n    <link rel=\"icon\" type=\"image/png\" href=\"matriz_icon_256.png\">"
+    content "${content}")
 file(WRITE "${INPUT_HTML}" "${content}")
